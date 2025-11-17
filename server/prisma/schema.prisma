@@ -1,0 +1,265 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model School {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String?
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  admins        Admin[]
+  students      Student[]
+  teachers      Teacher[]
+  parents       Parent[]
+  grades        Grade[]
+  classes       Class[]
+  subjects      Subject[]
+  lessons       Lesson[]
+  exams         Exam[]
+  assignments   Assignment[]
+  results       Result[]
+  attendances   Attendance[]
+  events        Event[]
+  announcements Announcement[]
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  username String
+  schoolId Int
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@unique([username, schoolId])
+}
+
+model Student {
+  id          Int          @id @default(autoincrement())
+  username    String
+  name        String
+  surname     String
+  email       String?
+  phone       String?
+  address     String
+  img         String?
+  bloodType   String
+  sex         UserSex
+  createdAt   DateTime     @default(now())
+  schoolId    Int
+  school      School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  parentId    Int
+  parent      Parent       @relation(fields: [parentId], references: [id])
+  classId     Int
+  class       Class        @relation(fields: [classId], references: [id])
+  gradeId     Int
+  grade       Grade        @relation(fields: [gradeId], references: [id])
+  attendances Attendance[]
+  results     Result[]
+  birthday    DateTime
+
+  @@unique([username, schoolId])
+  @@unique([email, schoolId])
+  @@unique([phone, schoolId])
+}
+
+model Teacher {
+  id        Int       @id @default(autoincrement())
+  username  String
+  name      String
+  surname   String
+  email     String?
+  phone     String?
+  address   String
+  img       String?
+  bloodType String
+  sex       UserSex
+  createdAt DateTime  @default(now())
+  schoolId  Int
+  school    School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  subjects  Subject[]
+  lessons   Lesson[]
+  classes   Class[]
+  birthday  DateTime
+
+  @@unique([username, schoolId])
+  @@unique([email, schoolId])
+  @@unique([phone, schoolId])
+}
+
+model Parent {
+  id        Int       @id @default(autoincrement())
+  username  String
+  name      String
+  surname   String
+  email     String?
+  phone     String
+  address   String
+  createdAt DateTime  @default(now())
+  schoolId  Int
+  school    School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  students  Student[]
+
+  @@unique([username, schoolId])
+  @@unique([email, schoolId])
+  @@unique([phone, schoolId])
+}
+
+model Grade {
+  id       Int @id @default(autoincrement())
+  level    Int
+  schoolId Int
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  students Student[]
+  classess Class[]
+
+  @@unique([level, schoolId])
+}
+
+model Class {
+  id            Int            @id @default(autoincrement())
+  name          String
+  capacity      Int
+  schoolId      Int
+  school        School          @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  supervisorId  Int?
+  supervisor    Teacher?        @relation(fields: [supervisorId], references: [id])
+  lessons       Lesson[]
+  students      Student[]
+  gradeId       Int
+  grade         Grade           @relation(fields: [gradeId], references: [id])
+  events        Event[]
+  announcements Announcement[]
+
+  @@unique([name, schoolId])
+}
+
+model Subject {
+  id       Int       @id @default(autoincrement())
+  name     String
+  schoolId Int
+  school   School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teachers Teacher[]
+  lessons  Lesson[]
+
+  @@unique([name, schoolId])
+}
+
+model Lesson {
+  id        Int      @id @default(autoincrement())
+  name      String
+  day       Day
+  startTime DateTime
+  endTime   DateTime
+  schoolId  Int
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  subjectId   Int
+  subject     Subject      @relation(fields: [subjectId], references: [id])
+  classId     Int
+  class       Class        @relation(fields: [classId], references: [id])
+  teacherId   Int
+  teacher     Teacher      @relation(fields: [teacherId], references: [id])
+  exams       Exam[]
+  assignments Assignment[]
+  attendances Attendance[]
+}
+
+model Exam {
+  id        Int      @id @default(autoincrement())
+  title     String
+  startTime DateTime
+  endTime   DateTime
+  schoolId  Int
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  lessonId Int
+  lesson   Lesson   @relation(fields: [lessonId], references: [id])
+  results  Result[]
+}
+
+model Assignment {
+  id        Int      @id @default(autoincrement())
+  title     String
+  startDate DateTime
+  dueDate   DateTime
+  schoolId  Int
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  lessonId Int
+  lesson   Lesson   @relation(fields: [lessonId], references: [id])
+  results  Result[]
+}
+
+model Result {
+  id        Int @id @default(autoincrement())
+  score     Int
+  schoolId  Int
+  school    School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  examId       Int?
+  exam         Exam?       @relation(fields: [examId], references: [id])
+  assignmentId Int?
+  assignment   Assignment? @relation(fields: [assignmentId], references: [id])
+  studentId    Int
+  student      Student     @relation(fields: [studentId], references: [id])
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  present   Boolean
+  schoolId  Int
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  studentId Int
+  student   Student  @relation(fields: [studentId], references: [id])
+  lessonId  Int
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  startTime   DateTime
+  endTime     DateTime
+  schoolId    Int
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  classId Int?
+  class   Class? @relation(fields: [classId], references: [id])
+}
+
+model Announcement {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  date        DateTime
+  schoolId    Int
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  classId Int?
+  class   Class? @relation(fields: [classId], references: [id])
+}
+
+enum UserSex {
+  MALE
+  FEMALE
+}
+
+enum Day {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+}
