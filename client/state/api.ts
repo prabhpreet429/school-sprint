@@ -1,135 +1,81 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-export interface Product {
-  productId: string;
+// Type definitions for Dashboard API
+export interface SchoolDetails {
+  id: number;
   name: string;
-  price: number;
-  rating?: number;
-  stockQuantity: number;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface NewProduct {
-  name: string;
-  price: number;
-  rating?: number;
-  stockQuantity: number;
+export interface UpcomingEvent {
+  id: number;
+  title: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  className: string | null;
 }
 
-export interface SalesSummary {
-  salesSummaryId: string;
-  totalValue: number;
-  changePercentage?: number;
+export interface AttendanceRecord {
+  id: number;
   date: string;
+  present: boolean;
+  student: {
+    id: number;
+    name: string;
+  };
+  lesson: {
+    id: number;
+    name: string;
+  };
 }
 
-export interface PurchaseSummary {
-  purchaseSummaryId: string;
-  totalPurchased: number;
-  changePercentage?: number;
-  date: string;
+export interface AttendanceStatistics {
+  totalRecords: number;
+  present: number;
+  absent: number;
+  attendanceRate: number;
 }
 
-export interface ExpenseSummary {
-  expenseSummarId: string;
-  totalExpenses: number;
-  date: string;
+export interface DashboardData {
+  schoolDetails: SchoolDetails | null;
+  counts: {
+    students: number;
+    teachers: number;
+  };
+  upcomingEvents: UpcomingEvent[];
+  attendance: {
+    recentRecords: AttendanceRecord[];
+    statistics: AttendanceStatistics;
+  };
 }
 
-export interface ExpenseByCategorySummary {
-  expenseByCategorySummaryId: string;
-  category: string;
-  amount: string;
-  date: string;
+export interface DashboardResponse {
+  success: boolean;
+  data: DashboardData;
+  message?: string;
+  error?: string;
 }
-
-export interface DashboardMetrics {
-  popularProducts: Product[];
-  salesSummary: SalesSummary[];
-  purchaseSummary: PurchaseSummary[];
-  expenseSummary: ExpenseSummary[];
-  expenseByCategorySummary: ExpenseByCategorySummary[];
-}
-
-export interface User {
-  userId: string;
-  name: string;
-  email: string;
-}
-
-// export const api = createApi({
-//   baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
-//   reducerPath: "api",
-//   tagTypes: ["DashboardMetrics", "Products", "Users", "Expenses"],
-//   endpoints: (build) => ({
-//     getDashboardMetrics: build.query<DashboardMetrics, void>({
-//       query: () => "/dashboard",
-//       providesTags: ["DashboardMetrics"],
-//     }),
-//     getProducts: build.query<Product[], string | void>({
-//       query: (search) => ({
-//         url: "/products",
-//         params: search ? { search } : {},
-//       }),
-//       providesTags: ["Products"],
-//     }),
-//     createProduct: build.mutation<Product, NewProduct>({
-//       query: (newProduct) => ({
-//         url: "/products",
-//         method: "POST",
-//         body: newProduct,
-//       }),
-//       invalidatesTags: ["Products"],
-//     }),
-//     getUsers: build.query<User[], void>({
-//       query: () => "/users",
-//       providesTags: ["Users"],
-//     }),
-//     getExpensesByCategory: build.query<ExpenseByCategorySummary[], void>({
-//       query: () => "/expenses",
-//       providesTags: ["Expenses"],
-//     }),
-//   }),
-// });
 
 export const api = createApi({
-  baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
+  baseQuery: fetchBaseQuery({ 
+    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
+  }),
   reducerPath: "api",
-  tagTypes: [],
+  tagTypes: ["DashboardData"],
   endpoints: (build) => ({
-    // getDashboardMetrics: build.query<DashboardMetrics, void>({
-    //   query: () => "/dashboard",
-    //   providesTags: ["DashboardMetrics"],
-    // }),
-    // getProducts: build.query<Product[], string | void>({
-    //   query: (search) => ({
-    //     url: "/products",
-    //     params: search ? { search } : {},
-    //   }),
-    //   providesTags: ["Products"],
-    // }),
-    // createProduct: build.mutation<Product, NewProduct>({
-    //   query: (newProduct) => ({
-    //     url: "/products",
-    //     method: "POST",
-    //     body: newProduct,
-    //   }),
-    //   invalidatesTags: ["Products"],
-    // }),
-    // getUsers: build.query<User[], void>({
-    //   query: () => "/users",
-    //   providesTags: ["Users"],
-    // }),
-    // getExpensesByCategory: build.query<ExpenseByCategorySummary[], void>({
-    //   query: () => "/expenses",
-    //   providesTags: ["Expenses"],
-    // }),
+    // Get dashboard data by schoolId
+    getDashboardData: build.query<DashboardResponse, number>({
+      query: (schoolId) => `dashboard?schoolId=${schoolId}`,
+      providesTags: ["DashboardData"],
+    }),
   }),
 });
 
 export const {
-//   useGetDashboardMetricsQuery,
-//   useGetProductsQuery,
-//   useCreateProductMutation,
-//   useGetUsersQuery,
-//   useGetExpensesByCategoryQuery,
+  useGetDashboardDataQuery,
 } = api;

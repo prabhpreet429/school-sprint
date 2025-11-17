@@ -219,7 +219,7 @@ async function main() {
   if (createdTeachers.length >= 4 && createdSubjects.length >= 7) {
     // Teacher 1 teaches Math, English, Science
     await prisma.teacher.update({
-      where: { id: createdTeachers[0].id },
+      where: { id: createdTeachers[0]!.id },
       data: {
         subjects: {
           connect: createdSubjects.slice(0, 3).map((s) => ({ id: s.id })),
@@ -229,7 +229,7 @@ async function main() {
 
     // Teacher 2 teaches History, Geography
     await prisma.teacher.update({
-      where: { id: createdTeachers[1].id },
+      where: { id: createdTeachers[1]!.id },
       data: {
         subjects: {
           connect: createdSubjects.slice(3, 5).map((s) => ({ id: s.id })),
@@ -239,7 +239,7 @@ async function main() {
 
     // Teacher 3 teaches Art, PE
     await prisma.teacher.update({
-      where: { id: createdTeachers[2].id },
+      where: { id: createdTeachers[2]!.id },
       data: {
         subjects: {
           connect: createdSubjects.slice(5, 7).map((s) => ({ id: s.id })),
@@ -249,10 +249,10 @@ async function main() {
 
     // Teacher 4 teaches Math, Science
     await prisma.teacher.update({
-      where: { id: createdTeachers[3].id },
+      where: { id: createdTeachers[3]!.id },
       data: {
         subjects: {
-          connect: [createdSubjects[0], createdSubjects[2]].map((s) => ({
+          connect: [createdSubjects[0]!, createdSubjects[2]!].map((s) => ({
             id: s.id,
           })),
         },
@@ -267,26 +267,26 @@ async function main() {
     {
       name: "Grade 1-A",
       capacity: 25,
-      gradeId: createdGrades[0].id,
-      supervisorId: createdTeachers[0].id,
+      gradeId: createdGrades[0]!.id,
+      supervisorId: createdTeachers[0]!.id,
     },
     {
       name: "Grade 1-B",
       capacity: 24,
-      gradeId: createdGrades[0].id,
-      supervisorId: createdTeachers[1].id,
+      gradeId: createdGrades[0]!.id,
+      supervisorId: createdTeachers[1]!.id,
     },
     {
       name: "Grade 2-A",
       capacity: 26,
-      gradeId: createdGrades[1].id,
-      supervisorId: createdTeachers[2].id,
+      gradeId: createdGrades[1]!.id,
+      supervisorId: createdTeachers[2]!.id,
     },
     {
       name: "Grade 3-A",
       capacity: 25,
-      gradeId: createdGrades[2].id,
-      supervisorId: createdTeachers[3].id,
+      gradeId: createdGrades[2]!.id,
+      supervisorId: createdTeachers[3]!.id,
     },
   ];
   const createdClasses = [];
@@ -313,9 +313,9 @@ async function main() {
       address: "123 Main St, City",
       bloodType: "A+",
       sex: UserSex.FEMALE,
-      parentId: createdParents[0].id,
-      classId: createdClasses[0].id,
-      gradeId: createdGrades[0].id,
+      parentId: createdParents[0]!.id,
+      classId: createdClasses[0]!.id,
+      gradeId: createdGrades[0]!.id,
       birthday: new Date("2017-01-15"),
     },
     {
@@ -327,9 +327,9 @@ async function main() {
       address: "456 Oak Ave, City",
       bloodType: "O+",
       sex: UserSex.MALE,
-      parentId: createdParents[1].id,
-      classId: createdClasses[0].id,
-      gradeId: createdGrades[0].id,
+      parentId: createdParents[1]!.id,
+      classId: createdClasses[0]!.id,
+      gradeId: createdGrades[0]!.id,
       birthday: new Date("2017-03-20"),
     },
     {
@@ -341,9 +341,9 @@ async function main() {
       address: "789 Pine Rd, City",
       bloodType: "B+",
       sex: UserSex.FEMALE,
-      parentId: createdParents[2].id,
-      classId: createdClasses[1].id,
-      gradeId: createdGrades[0].id,
+      parentId: createdParents[2]!.id,
+      classId: createdClasses[1]!.id,
+      gradeId: createdGrades[0]!.id,
       birthday: new Date("2017-05-10"),
     },
     {
@@ -355,9 +355,9 @@ async function main() {
       address: "321 Elm St, City",
       bloodType: "A-",
       sex: UserSex.MALE,
-      parentId: createdParents[3].id,
-      classId: createdClasses[2].id,
-      gradeId: createdGrades[1].id,
+      parentId: createdParents[3]!.id,
+      classId: createdClasses[2]!.id,
+      gradeId: createdGrades[1]!.id,
       birthday: new Date("2016-07-25"),
     },
     {
@@ -369,9 +369,9 @@ async function main() {
       address: "654 Maple Dr, City",
       bloodType: "O-",
       sex: UserSex.FEMALE,
-      parentId: createdParents[4].id,
-      classId: createdClasses[3].id,
-      gradeId: createdGrades[2].id,
+      parentId: createdParents[4]!.id,
+      classId: createdClasses[3]!.id,
+      gradeId: createdGrades[2]!.id,
       birthday: new Date("2015-09-12"),
     },
   ];
@@ -395,45 +395,45 @@ async function main() {
       day: Day.MONDAY,
       startTime: new Date("2024-01-15T09:00:00Z"),
       endTime: new Date("2024-01-15T10:00:00Z"),
-      subjectId: createdSubjects[0].id,
-      classId: createdClasses[0].id,
-      teacherId: createdTeachers[0].id,
+      subjectId: createdSubjects[0]!.id,
+      classId: createdClasses[0]!.id,
+      teacherId: createdTeachers[0]!.id,
     },
     {
       name: "English Reading",
       day: Day.MONDAY,
       startTime: new Date("2024-01-15T10:30:00Z"),
       endTime: new Date("2024-01-15T11:30:00Z"),
-      subjectId: createdSubjects[1].id,
-      classId: createdClasses[0].id,
-      teacherId: createdTeachers[0].id,
+      subjectId: createdSubjects[1]!.id,
+      classId: createdClasses[0]!.id,
+      teacherId: createdTeachers[0]!.id,
     },
     {
       name: "Science Lab",
       day: Day.TUESDAY,
       startTime: new Date("2024-01-16T09:00:00Z"),
       endTime: new Date("2024-01-16T10:30:00Z"),
-      subjectId: createdSubjects[2].id,
-      classId: createdClasses[1].id,
-      teacherId: createdTeachers[0].id,
+      subjectId: createdSubjects[2]!.id,
+      classId: createdClasses[1]!.id,
+      teacherId: createdTeachers[0]!.id,
     },
     {
       name: "History Class",
       day: Day.WEDNESDAY,
       startTime: new Date("2024-01-17T09:00:00Z"),
       endTime: new Date("2024-01-17T10:00:00Z"),
-      subjectId: createdSubjects[3].id,
-      classId: createdClasses[2].id,
-      teacherId: createdTeachers[1].id,
+      subjectId: createdSubjects[3]!.id,
+      classId: createdClasses[2]!.id,
+      teacherId: createdTeachers[1]!.id,
     },
     {
       name: "Art Workshop",
       day: Day.THURSDAY,
       startTime: new Date("2024-01-18T14:00:00Z"),
       endTime: new Date("2024-01-18T15:30:00Z"),
-      subjectId: createdSubjects[5].id,
-      classId: createdClasses[3].id,
-      teacherId: createdTeachers[2].id,
+      subjectId: createdSubjects[5]!.id,
+      classId: createdClasses[3]!.id,
+      teacherId: createdTeachers[2]!.id,
     },
   ];
   const createdLessons = [];
@@ -455,19 +455,19 @@ async function main() {
       title: "Math Midterm",
       startTime: new Date("2024-02-15T09:00:00Z"),
       endTime: new Date("2024-02-15T11:00:00Z"),
-      lessonId: createdLessons[0].id,
+      lessonId: createdLessons[0]!.id,
     },
     {
       title: "English Final",
       startTime: new Date("2024-03-20T09:00:00Z"),
       endTime: new Date("2024-03-20T11:00:00Z"),
-      lessonId: createdLessons[1].id,
+      lessonId: createdLessons[1]!.id,
     },
     {
       title: "Science Test",
       startTime: new Date("2024-02-25T09:00:00Z"),
       endTime: new Date("2024-02-25T10:30:00Z"),
-      lessonId: createdLessons[2].id,
+      lessonId: createdLessons[2]!.id,
     },
   ];
   const createdExams = [];
@@ -489,19 +489,19 @@ async function main() {
       title: "Math Homework - Chapter 1",
       startDate: new Date("2024-01-15T00:00:00Z"),
       dueDate: new Date("2024-01-22T23:59:59Z"),
-      lessonId: createdLessons[0].id,
+      lessonId: createdLessons[0]!.id,
     },
     {
       title: "English Essay",
       startDate: new Date("2024-01-20T00:00:00Z"),
       dueDate: new Date("2024-02-05T23:59:59Z"),
-      lessonId: createdLessons[1].id,
+      lessonId: createdLessons[1]!.id,
     },
     {
       title: "Science Project",
       startDate: new Date("2024-02-01T00:00:00Z"),
       dueDate: new Date("2024-02-28T23:59:59Z"),
-      lessonId: createdLessons[2].id,
+      lessonId: createdLessons[2]!.id,
     },
   ];
   const createdAssignments = [];
@@ -521,28 +521,28 @@ async function main() {
   const resultsData = [
     {
       score: 85,
-      studentId: createdStudents[0].id,
-      examId: createdExams[0].id,
+      studentId: createdStudents[0]!.id,
+      examId: createdExams[0]!.id,
     },
     {
       score: 92,
-      studentId: createdStudents[1].id,
-      examId: createdExams[0].id,
+      studentId: createdStudents[1]!.id,
+      examId: createdExams[0]!.id,
     },
     {
       score: 78,
-      studentId: createdStudents[0].id,
-      examId: createdExams[1].id,
+      studentId: createdStudents[0]!.id,
+      examId: createdExams[1]!.id,
     },
     {
       score: 88,
-      studentId: createdStudents[2].id,
-      assignmentId: createdAssignments[0].id,
+      studentId: createdStudents[2]!.id,
+      assignmentId: createdAssignments[0]!.id,
     },
     {
       score: 95,
-      studentId: createdStudents[3].id,
-      assignmentId: createdAssignments[1].id,
+      studentId: createdStudents[3]!.id,
+      assignmentId: createdAssignments[1]!.id,
     },
   ];
   for (const result of resultsData) {
@@ -561,32 +561,32 @@ async function main() {
     {
       date: new Date("2024-01-15T09:00:00Z"),
       present: true,
-      studentId: createdStudents[0].id,
-      lessonId: createdLessons[0].id,
+      studentId: createdStudents[0]!.id,
+      lessonId: createdLessons[0]!.id,
     },
     {
       date: new Date("2024-01-15T09:00:00Z"),
       present: true,
-      studentId: createdStudents[1].id,
-      lessonId: createdLessons[0].id,
+      studentId: createdStudents[1]!.id,
+      lessonId: createdLessons[0]!.id,
     },
     {
       date: new Date("2024-01-15T10:30:00Z"),
       present: false,
-      studentId: createdStudents[0].id,
-      lessonId: createdLessons[1].id,
+      studentId: createdStudents[0]!.id,
+      lessonId: createdLessons[1]!.id,
     },
     {
       date: new Date("2024-01-16T09:00:00Z"),
       present: true,
-      studentId: createdStudents[2].id,
-      lessonId: createdLessons[2].id,
+      studentId: createdStudents[2]!.id,
+      lessonId: createdLessons[2]!.id,
     },
     {
       date: new Date("2024-01-17T09:00:00Z"),
       present: true,
-      studentId: createdStudents[3].id,
-      lessonId: createdLessons[3].id,
+      studentId: createdStudents[3]!.id,
+      lessonId: createdLessons[3]!.id,
     },
   ];
   for (const att of attendanceData) {
@@ -607,14 +607,14 @@ async function main() {
       description: "Visit to the Science Museum",
       startTime: new Date("2024-02-10T08:00:00Z"),
       endTime: new Date("2024-02-10T15:00:00Z"),
-      classId: createdClasses[0].id,
+      classId: createdClasses[0]!.id,
     },
     {
       title: "Parent-Teacher Meeting",
       description: "Quarterly review meeting",
       startTime: new Date("2024-03-05T14:00:00Z"),
       endTime: new Date("2024-03-05T16:00:00Z"),
-      classId: createdClasses[1].id,
+      classId: createdClasses[1]!.id,
     },
     {
       title: "Sports Day",
@@ -641,13 +641,13 @@ async function main() {
       title: "Welcome Back to School",
       description: "Welcome all students back for the new academic year!",
       date: new Date("2024-01-08T00:00:00Z"),
-      classId: createdClasses[0].id,
+      classId: createdClasses[0]!.id,
     },
     {
       title: "Homework Reminder",
       description: "Please remember to submit your assignments on time.",
       date: new Date("2024-01-20T00:00:00Z"),
-      classId: createdClasses[1].id,
+      classId: createdClasses[1]!.id,
     },
     {
       title: "School Holiday Notice",
