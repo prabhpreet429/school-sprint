@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
-type StudentFormData = {
+type TeacherFormData = {
   username: string;
   name: string;
   surname: string;
@@ -27,29 +27,26 @@ type StudentFormData = {
   bloodType: string;
   sex: "MALE" | "FEMALE";
   schoolId: number;
-  parentId: number;
-  classId: number;
-  gradeId: number;
   birthday: string;
   email?: string;
   phone?: string;
   img?: string;
 };
 
-interface CreateStudentModalProps {
+interface CreateTeacherModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (studentData: StudentFormData) => void;
+  onCreate: (teacherData: TeacherFormData) => void;
   schoolId: number;
 }
 
-const CreateStudentModal = ({
+const CreateTeacherModal = ({
   isOpen,
   onClose,
   onCreate,
   schoolId,
-}: CreateStudentModalProps) => {
-  const [formData, setFormData] = useState<StudentFormData>({
+}: CreateTeacherModalProps) => {
+  const [formData, setFormData] = useState<TeacherFormData>({
     username: "",
     name: "",
     surname: "",
@@ -57,9 +54,6 @@ const CreateStudentModal = ({
     bloodType: "",
     sex: "MALE",
     schoolId,
-    parentId: 0,
-    classId: 0,
-    gradeId: 0,
     birthday: "",
     email: "",
     phone: "",
@@ -122,15 +116,6 @@ const CreateStudentModal = ({
     if (!formData.sex) {
       newErrors.sex = "Gender is required";
     }
-    if (!formData.parentId || formData.parentId === 0) {
-      newErrors.parentId = "Parent is required";
-    }
-    if (!formData.classId || formData.classId === 0) {
-      newErrors.classId = "Class is required";
-    }
-    if (!formData.gradeId || formData.gradeId === 0) {
-      newErrors.gradeId = "Grade is required";
-    }
     if (!formData.birthday) {
       newErrors.birthday = "Birthday is required";
     }
@@ -142,17 +127,14 @@ const CreateStudentModal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      // Convert numeric fields to numbers
-      const studentData: StudentFormData = {
+      // Convert optional fields
+      const teacherData: TeacherFormData = {
         ...formData,
-        parentId: Number(formData.parentId),
-        classId: Number(formData.classId),
-        gradeId: Number(formData.gradeId),
         email: formData.email || undefined,
         phone: formData.phone || undefined,
         img: formData.img || undefined,
       };
-      onCreate(studentData);
+      onCreate(teacherData);
       // Reset form
       setFormData({
         username: "",
@@ -162,9 +144,6 @@ const CreateStudentModal = ({
         bloodType: "",
         sex: "MALE",
         schoolId,
-        parentId: 0,
-        classId: 0,
-        gradeId: 0,
         birthday: "",
         email: "",
         phone: "",
@@ -181,9 +160,9 @@ const CreateStudentModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Student</DialogTitle>
+          <DialogTitle>Create Teacher</DialogTitle>
           <DialogDescription>
-            Fill in the student information to create a new student record.
+            Fill in the teacher information to create a new teacher record.
           </DialogDescription>
         </DialogHeader>
 
@@ -352,66 +331,6 @@ const CreateStudentModal = ({
                 <p className="text-red-500 text-xs mt-1">{errors.birthday}</p>
               )}
             </div>
-
-            {/* Parent ID */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Parent ID <span className="text-red-500">*</span>
-              </label>
-              <Input
-                type="number"
-                name="parentId"
-                value={formData.parentId || ""}
-                onChange={(e) =>
-                  handleSelectChange("parentId", e.target.value)
-                }
-                placeholder="Enter parent ID"
-                className={errors.parentId ? "border-red-500" : ""}
-              />
-              {errors.parentId && (
-                <p className="text-red-500 text-xs mt-1">{errors.parentId}</p>
-              )}
-            </div>
-
-            {/* Class ID */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Class ID <span className="text-red-500">*</span>
-              </label>
-              <Input
-                type="number"
-                name="classId"
-                value={formData.classId || ""}
-                onChange={(e) =>
-                  handleSelectChange("classId", e.target.value)
-                }
-                placeholder="Enter class ID"
-                className={errors.classId ? "border-red-500" : ""}
-              />
-              {errors.classId && (
-                <p className="text-red-500 text-xs mt-1">{errors.classId}</p>
-              )}
-            </div>
-
-            {/* Grade ID */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Grade ID <span className="text-red-500">*</span>
-              </label>
-              <Input
-                type="number"
-                name="gradeId"
-                value={formData.gradeId || ""}
-                onChange={(e) =>
-                  handleSelectChange("gradeId", e.target.value)
-                }
-                placeholder="Enter grade ID"
-                className={errors.gradeId ? "border-red-500" : ""}
-              />
-              {errors.gradeId && (
-                <p className="text-red-500 text-xs mt-1">{errors.gradeId}</p>
-              )}
-            </div>
           </div>
 
           <DialogFooter>
@@ -424,7 +343,7 @@ const CreateStudentModal = ({
               Cancel
             </Button>
             <Button type="submit" className="cursor-pointer">
-              Create Student
+              Create Teacher
             </Button>
           </DialogFooter>
         </form>
@@ -433,5 +352,5 @@ const CreateStudentModal = ({
   );
 };
 
-export default CreateStudentModal;
+export default CreateTeacherModal;
 

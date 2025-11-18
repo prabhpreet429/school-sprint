@@ -1,12 +1,12 @@
 "use client";
 
-import { useGetStudentsQuery, useCreateStudentMutation } from "@/state/api";
+import { useGetTeachersQuery, useCreateTeacherMutation } from "@/state/api";
 import Header from "@/app/(components)/Header";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { PlusCircleIcon, SearchIcon } from "lucide-react";
-import CreateStudentModal from "./CreateStudentModal";
+import CreateTeacherModal from "./CreateTeacherModal";
 
 const columns: GridColDef[] = [
   { field: "id", headerName: "ID", width: 90 },
@@ -37,25 +37,6 @@ const columns: GridColDef[] = [
     width: 120,
   },
   {
-    field: "class",
-    headerName: "Class",
-    width: 150,
-    valueGetter: (value, row) => row.class?.name || "N/A",
-  },
-  {
-    field: "grade",
-    headerName: "Grade",
-    width: 100,
-    valueGetter: (value, row) => row.grade?.level || "N/A",
-  },
-  {
-    field: "parent",
-    headerName: "Parent",
-    width: 200,
-    valueGetter: (value, row) => 
-      row.parent ? `${row.parent.name} ${row.parent.surname}` : "N/A",
-  },
-  {
     field: "birthday",
     headerName: "Birthday",
     width: 150,
@@ -70,7 +51,7 @@ const columns: GridColDef[] = [
   },
 ];
 
-const Students = () => {
+const Teachers = () => {
   const searchParams = useSearchParams();
   const schoolIdParam = searchParams?.get("schoolId");
   const [searchTerm, setSearchTerm] = useState("");
@@ -100,22 +81,22 @@ const Students = () => {
   }
 
   const {
-    data: studentsData,
+    data: teachersData,
     isLoading,
     isError,
-  } = useGetStudentsQuery({
+  } = useGetTeachersQuery({
     schoolId,
     search: searchTerm || undefined,
   });
 
-  const [createStudent] = useCreateStudentMutation();
+  const [createTeacher] = useCreateTeacherMutation();
 
-  const handleCreateStudent = async (studentData: any) => {
+  const handleCreateTeacher = async (teacherData: any) => {
     try {
-      await createStudent({ ...studentData, schoolId }).unwrap();
+      await createTeacher({ ...teacherData, schoolId }).unwrap();
       setIsModalOpen(false);
     } catch (error) {
-      console.error("Error creating student:", error);
+      console.error("Error creating teacher:", error);
     }
   };
 
@@ -123,15 +104,15 @@ const Students = () => {
     return <div className="py-4">Loading...</div>;
   }
 
-  if (isError || !studentsData) {
+  if (isError || !teachersData) {
     return (
       <div className="text-center text-red-500 py-4">
-        Failed to fetch students
+        Failed to fetch teachers
       </div>
     );
   }
 
-  const students = studentsData?.data || [];
+  const teachers = teachersData?.data || [];
 
   return (
     <div className="mx-auto pb-5 w-full">
@@ -141,7 +122,7 @@ const Students = () => {
           <SearchIcon className="w-5 h-5 text-gray-500 m-2" />
           <input
             className="w-full py-2 px-4 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            placeholder="Search students..."
+            placeholder="Search teachers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -150,20 +131,20 @@ const Students = () => {
 
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
-        <Header name="Students" />
+        <Header name="Teachers" />
         <button
           className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded cursor-pointer"
           onClick={() => setIsModalOpen(true)}
         >
           <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Create
-          Student
+          Teacher
         </button>
       </div>
 
-      {/* BODY STUDENTS LIST */}
+      {/* BODY TEACHERS LIST */}
       <div className="w-full">
         <DataGrid
-          rows={students}
+          rows={teachers}
           columns={columns}
           getRowId={(row) => row.id}
           checkboxSelection
@@ -189,14 +170,15 @@ const Students = () => {
       </div>
 
       {/* MODAL */}
-      <CreateStudentModal
+      <CreateTeacherModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onCreate={handleCreateStudent}
+        onCreate={handleCreateTeacher}
         schoolId={schoolId}
       />
     </div>
   );
 };
 
-export default Students;
+export default Teachers;
+

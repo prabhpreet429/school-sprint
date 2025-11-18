@@ -90,6 +90,26 @@ export interface Student {
   };
 }
 
+export interface Teacher {
+  id: number;
+  username: string;
+  name: string;
+  surname: string;
+  email: string | null;
+  phone: string | null;
+  address: string;
+  img: string | null;
+  bloodType: string;
+  sex: "MALE" | "FEMALE";
+  createdAt: string;
+  schoolId: number;
+  birthday: string;
+  school?: {
+    id: number;
+    name: string;
+  };
+}
+
 export interface DashboardData {
   schoolDetails: SchoolDetails | null;
   counts: {
@@ -119,7 +139,7 @@ export const api = createApi({
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
   }),
   reducerPath: "api",
-  tagTypes: ["DashboardData", "Students"],
+  tagTypes: ["DashboardData", "Students", "Teachers"],
   endpoints: (build) => ({
     // Get dashboard data by schoolId
     getDashboardData: build.query<DashboardResponse, number>({
@@ -144,11 +164,31 @@ export const api = createApi({
       }),
       invalidatesTags: ["Students"],
     }),
+    getTeachers: build.query<{ success: boolean; data: Teacher[] }, { schoolId: number; search?: string }>({
+      query: ({ schoolId, search }) => ({
+        url: '/teachers',
+        params: {
+          schoolId,
+          ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Teachers"],
+    }),
+    createTeacher: build.mutation<{ success: boolean; data: Teacher }, Partial<Teacher>>({
+      query: (newTeacher) => ({
+        url: '/teachers',
+        method: 'POST',
+        body: newTeacher,
+      }),
+      invalidatesTags: ["Teachers"],
+    }),
   }),
 });
 
 export const {
   useGetDashboardDataQuery,
   useGetStudentsQuery,
-  useCreateStudentMutation
+  useCreateStudentMutation,
+  useGetTeachersQuery,
+  useCreateTeacherMutation
 } = api;
