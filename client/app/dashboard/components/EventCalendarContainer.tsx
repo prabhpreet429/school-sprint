@@ -64,7 +64,10 @@ const EventCalendarContainer = ({ searchParams }: EventCalendarContainerProps) =
         <CardTitle className="text-lg font-bold">Calendar</CardTitle>
       </CardHeader>
       <CardContent className="p-6">
-        <Calendar events={dashboardData.upcomingEvents} />
+        <Calendar 
+          events={dashboardData.upcomingEvents} 
+          holidays={dashboardData.holidays || []}
+        />
       </CardContent>
     </Card>
   );

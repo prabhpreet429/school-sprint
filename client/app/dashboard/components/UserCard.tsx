@@ -70,7 +70,7 @@ const UserCard = ({ type, count, label, schoolDetails }: UserCardProps) => {
   // Special rendering for school card with details
   if (type === "school" && schoolDetails) {
     return (
-      <div className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(50%-0.67rem)] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 h-full flex-shrink-0">
+      <div className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(50%-0.67rem)] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 h-full sm:flex-shrink-0">
         <div className={cn("bg-gradient-to-br", bgGradient, "p-5 w-full h-full min-h-[160px] flex flex-col justify-between")}>
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 min-w-0 pr-2">
@@ -120,7 +120,7 @@ const UserCard = ({ type, count, label, schoolDetails }: UserCardProps) => {
   }
 
   return (
-    <div className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.67rem)] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 h-full flex-shrink-0">
+    <div className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.67rem)] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 h-full sm:flex-shrink-0">
       <div className={cn("bg-gradient-to-br", bgGradient, "p-5 w-full h-full min-h-[160px] flex flex-col justify-between")}>
         <div className="flex items-start justify-between">
           <div className="flex-1">

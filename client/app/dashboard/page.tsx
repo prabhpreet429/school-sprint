@@ -5,6 +5,7 @@ import UserCard from "./components/UserCard";
 import CountChartContainer from "./components/CountChartContainer";
 import AttendanceChartContainer from "./components/AttendanceChartContainer";
 import EventCalendarContainer from "./components/EventCalendarContainer";
+import EventsList from "./components/EventsList";
 import Announcements from "./components/Announcements";
 import { useGetDashboardDataQuery } from "@/state/api";
 import { Card, CardContent } from "@/components/ui/card";
@@ -45,9 +46,17 @@ const Dashboard = () => {
     );
   }
 
-  const { data, error, isLoading } = useGetDashboardDataQuery(schoolId);
+  const queryResult = useGetDashboardDataQuery(schoolId);
+  const { data, error, isLoading, isFetching, status } = queryResult;
 
-  if (isLoading) {
+  // Show loading if: query is pending, loading, or fetching without data
+  const shouldShowLoading = 
+    status === 'pending' || 
+    isLoading || 
+    (isFetching && !data) ||
+    (!data && status !== 'rejected');
+  
+  if (shouldShowLoading) {
     return (
       <div className="p-4 flex gap-4 flex-col md:flex-row">
         <div className="w-full lg:w-2/3 flex flex-col gap-8">
@@ -64,6 +73,7 @@ const Dashboard = () => {
             <Skeleton className="w-full lg:w-1/3 h-[450px]" />
             <Skeleton className="w-full lg:w-2/3 h-[450px]" />
           </div>
+          <Skeleton className="h-[300px] w-full" />
         </div>
         <div className="w-full lg:w-1/3 flex flex-col gap-8">
           <Skeleton className="h-[400px] w-full" />
@@ -105,11 +115,19 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-4 flex gap-4 flex-col md:flex-row">
+    <div className="p-4 flex gap-4 flex-col md:flex-row relative">
+      {isFetching && data && (
+        <div className="absolute top-0 left-0 right-0 bottom-0 bg-white/50 dark:bg-gray-900/50 z-10 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Loading...</p>
+          </div>
+        </div>
+      )}
       {/* LEFT */}
       <div className="w-full lg:w-2/3 flex flex-col gap-8">
         {/* USER CARDS */}
-        <div className="flex gap-4 justify-between flex-nowrap">
+        <div className="flex gap-4 flex-col sm:flex-row sm:flex-nowrap">
           <UserCard 
             type="school" 
             schoolDetails={dashboardData.schoolDetails || undefined}
@@ -129,12 +147,15 @@ const Dashboard = () => {
             <AttendanceChartContainer />
           </div>
         </div>
+
+        {/* BOTTOM - ANNOUNCEMENTS */}
+        <Announcements />
       </div>
 
       {/* RIGHT */}
       <div className="w-full lg:w-1/3 flex flex-col gap-8">
         <EventCalendarContainer />
-        <Announcements />
+        <EventsList />
       </div>
     </div>
   );

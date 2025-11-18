@@ -22,6 +22,11 @@ export interface UpcomingEvent {
   className: string | null;
 }
 
+export interface Holiday {
+  date: string;
+  name: string;
+}
+
 export interface AttendanceRecord {
   id: number;
   date: string;
@@ -49,6 +54,42 @@ export interface MonthlyAverage {
   absent: number;
 }
 
+export interface Student {
+  id: number;
+  username: string;
+  name: string;
+  surname: string;
+  email: string | null;
+  phone: string | null;
+  address: string;
+  img: string | null;
+  bloodType: string;
+  sex: "MALE" | "FEMALE";
+  createdAt: string;
+  schoolId: number;
+  parentId: number;
+  classId: number;
+  gradeId: number;
+  birthday: string;
+  school?: {
+    id: number;
+    name: string;
+  };
+  parent?: {
+    id: number;
+    name: string;
+    surname: string;
+  };
+  class?: {
+    id: number;
+    name: string;
+  };
+  grade?: {
+    id: number;
+    level: number;
+  };
+}
+
 export interface DashboardData {
   schoolDetails: SchoolDetails | null;
   counts: {
@@ -58,6 +99,7 @@ export interface DashboardData {
     girls: number;
   };
   upcomingEvents: UpcomingEvent[];
+  holidays: Holiday[];
   attendance: {
     recentRecords: AttendanceRecord[];
     statistics: AttendanceStatistics;
@@ -77,16 +119,36 @@ export const api = createApi({
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
   }),
   reducerPath: "api",
-  tagTypes: ["DashboardData"],
+  tagTypes: ["DashboardData", "Students"],
   endpoints: (build) => ({
     // Get dashboard data by schoolId
     getDashboardData: build.query<DashboardResponse, number>({
       query: (schoolId) => `dashboard?schoolId=${schoolId}`,
       providesTags: ["DashboardData"],
     }),
+    getStudents: build.query<{ success: boolean; data: Student[] }, { schoolId: number; search?: string }>({
+      query: ({ schoolId, search }) => ({
+        url: '/students',
+        params: {
+          schoolId,
+          ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Students"],
+    }),
+    createStudent: build.mutation<{ success: boolean; data: Student }, Partial<Student>>({
+      query: (newStudent) => ({
+        url: '/students',
+        method: 'POST',
+        body: newStudent,
+      }),
+      invalidatesTags: ["Students"],
+    }),
   }),
 });
 
 export const {
   useGetDashboardDataQuery,
+  useGetStudentsQuery,
+  useCreateStudentMutation
 } = api;

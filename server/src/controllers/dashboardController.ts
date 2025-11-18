@@ -1,5 +1,6 @@
 import { PrismaClient, UserSex } from "@prisma/client";
 import { Request, Response } from "express";
+import { getHolidaysForCountry } from "../utils/holidays.js";
 
 const prisma = new PrismaClient();
 
@@ -178,6 +179,12 @@ export const getDashboardData = async (req: Request, res: Response) => {
       });
     }
 
+    // Get holidays for the school's country
+    let holidays: Array<{ date: Date; name: string }> = [];
+    if (schoolDetails?.country) {
+      holidays = getHolidaysForCountry(schoolDetails.country);
+    }
+
     // Format the response
     const dashboardData = {
       schoolDetails: schoolDetails || null,
@@ -194,6 +201,10 @@ export const getDashboardData = async (req: Request, res: Response) => {
         startTime: event.startTime,
         endTime: event.endTime,
         className: event.class?.name || null
+      })),
+      holidays: holidays.map(holiday => ({
+        date: holiday.date.toISOString(),
+        name: holiday.name
       })),
       attendance: {
         recentRecords: attendanceData.map(att => ({

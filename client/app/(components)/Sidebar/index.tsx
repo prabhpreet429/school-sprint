@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import React from "react";
 
 interface SidebarLinkProps {
@@ -29,11 +29,17 @@ const SidebarLink = ({
   isCollapsed,
 }: SidebarLinkProps) => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const schoolId = searchParams?.get("schoolId");
+  
   const isActive =
     pathname === href || (pathname === "/" && href === "/dashboard");
 
+  // Preserve schoolId in the URL if it exists
+  const hrefWithSchoolId = schoolId ? `${href}?schoolId=${schoolId}` : href;
+
   return (
-    <Link href={href}>
+    <Link href={hrefWithSchoolId}>
       <div
         className={`cursor-pointer flex items-center ${
           isCollapsed ? "justify-center py-4" : "justify-start px-8 py-4"

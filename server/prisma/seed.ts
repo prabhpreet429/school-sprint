@@ -616,27 +616,42 @@ async function main() {
 
   // Seed Events (needs classId, schoolId)
   console.log("📅 Seeding Events...");
+  // Reuse the 'now' variable from attendance seeding above
   const eventsData = [
     {
       title: "School Field Trip",
       description: "Visit to the Science Museum",
-      startTime: new Date("2024-02-10T08:00:00Z"),
-      endTime: new Date("2024-02-10T15:00:00Z"),
+      startTime: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      endTime: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000 + 7 * 60 * 60 * 1000), // 7 hours later
       classId: createdClasses[0]!.id,
     },
     {
       title: "Parent-Teacher Meeting",
       description: "Quarterly review meeting",
-      startTime: new Date("2024-03-05T14:00:00Z"),
-      endTime: new Date("2024-03-05T16:00:00Z"),
+      startTime: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
+      endTime: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000), // 2 hours later
       classId: createdClasses[1]!.id,
     },
     {
       title: "Sports Day",
       description: "Annual school sports competition",
-      startTime: new Date("2024-04-15T09:00:00Z"),
-      endTime: new Date("2024-04-15T17:00:00Z"),
+      startTime: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      endTime: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000), // 8 hours later
       classId: null,
+    },
+    {
+      title: "Science Fair",
+      description: "Student science projects exhibition",
+      startTime: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+      endTime: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000), // 4 hours later
+      classId: createdClasses[2]!.id,
+    },
+    {
+      title: "Art Exhibition",
+      description: "Showcase of student artwork",
+      startTime: new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000), // 21 days from now
+      endTime: new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000), // 5 hours later
+      classId: createdClasses[3]!.id,
     },
   ];
   for (const event of eventsData) {
