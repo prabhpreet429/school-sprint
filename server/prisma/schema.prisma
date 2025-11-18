@@ -13,6 +13,8 @@ model School {
   address   String?
   phone     String?
   email     String?
+  country   String
+  timezone  String?  @default("UTC")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

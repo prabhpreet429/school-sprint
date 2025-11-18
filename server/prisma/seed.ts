@@ -38,6 +38,8 @@ async function main() {
       address: "123 Education Street, Springfield",
       phone: "555-1000",
       email: "info@springfield-elem.edu",
+      country: "United States",
+      timezone: "America/New_York",
     },
   });
   console.log(`✅ Created school: ${school.name} (ID: ${school.id})\n`);
@@ -557,36 +559,49 @@ async function main() {
 
   // Seed Attendance (needs studentId, lessonId, schoolId)
   console.log("✅ Seeding Attendance...");
+  const now = new Date();
   const attendanceData = [
     {
-      date: new Date("2024-01-15T09:00:00Z"),
+      date: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
       present: true,
       studentId: createdStudents[0]!.id,
       lessonId: createdLessons[0]!.id,
     },
     {
-      date: new Date("2024-01-15T09:00:00Z"),
+      date: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
       present: true,
       studentId: createdStudents[1]!.id,
       lessonId: createdLessons[0]!.id,
     },
     {
-      date: new Date("2024-01-15T10:30:00Z"),
+      date: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
       present: false,
       studentId: createdStudents[0]!.id,
       lessonId: createdLessons[1]!.id,
     },
     {
-      date: new Date("2024-01-16T09:00:00Z"),
+      date: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
       present: true,
       studentId: createdStudents[2]!.id,
       lessonId: createdLessons[2]!.id,
     },
     {
-      date: new Date("2024-01-17T09:00:00Z"),
+      date: new Date(now.getTime()), // Today
       present: true,
       studentId: createdStudents[3]!.id,
       lessonId: createdLessons[3]!.id,
+    },
+    {
+      date: new Date(now.getTime()), // Today
+      present: true,
+      studentId: createdStudents[0]!.id,
+      lessonId: createdLessons[0]!.id,
+    },
+    {
+      date: new Date(now.getTime()), // Today
+      present: false,
+      studentId: createdStudents[1]!.id,
+      lessonId: createdLessons[1]!.id,
     },
   ];
   for (const att of attendanceData) {

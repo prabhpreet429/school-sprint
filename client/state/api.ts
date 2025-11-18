@@ -7,6 +7,8 @@ export interface SchoolDetails {
   address: string | null;
   phone: string | null;
   email: string | null;
+  country: string;
+  timezone: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -41,16 +43,25 @@ export interface AttendanceStatistics {
   attendanceRate: number;
 }
 
+export interface MonthlyAverage {
+  month: string;
+  present: number;
+  absent: number;
+}
+
 export interface DashboardData {
   schoolDetails: SchoolDetails | null;
   counts: {
     students: number;
     teachers: number;
+    boys: number;
+    girls: number;
   };
   upcomingEvents: UpcomingEvent[];
   attendance: {
     recentRecords: AttendanceRecord[];
     statistics: AttendanceStatistics;
+    monthlyAverages: MonthlyAverage[];
   };
 }
 

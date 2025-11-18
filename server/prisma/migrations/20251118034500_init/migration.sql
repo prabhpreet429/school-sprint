@@ -11,6 +11,8 @@ CREATE TABLE "School" (
     "address" TEXT,
     "phone" TEXT,
     "email" TEXT,
+    "country" TEXT NOT NULL,
+    "timezone" TEXT DEFAULT 'UTC',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

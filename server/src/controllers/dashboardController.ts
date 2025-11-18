@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, UserSex } from "@prisma/client";
 import { Request, Response } from "express";
 
 const prisma = new PrismaClient();
@@ -35,6 +35,25 @@ export const getDashboardData = async (req: Request, res: Response) => {
 
     // Get current date for filtering upcoming events
     const now = new Date();
+    // Get date 4 months ago for attendance filtering (for monthly averages)
+    const fourMonthsAgo = new Date();
+    fourMonthsAgo.setMonth(fourMonthsAgo.getMonth() - 4);
+
+    // Get boys and girls count first
+    const [boysCount, girlsCount] = await Promise.all([
+      prisma.student.count({
+        where: {
+          schoolId,
+          sex: UserSex.MALE
+        }
+      }),
+      prisma.student.count({
+        where: {
+          schoolId,
+          sex: UserSex.FEMALE
+        }
+      })
+    ]);
 
     // Fetch all data in parallel for better performance
     const [
@@ -91,17 +110,19 @@ export const getDashboardData = async (req: Request, res: Response) => {
           address: true,
           phone: true,
           email: true,
+          country: true,
+          timezone: true,
           createdAt: true,
           updatedAt: true
         }
       }),
 
-      // Get attendance data (recent attendance records with statistics)
+      // Get attendance data (for last 4 months to calculate monthly averages)
       prisma.attendance.findMany({
         where: {
           schoolId,
           date: {
-            gte: new Date(now.getFullYear(), now.getMonth(), 1) // Current month
+            gte: fourMonthsAgo // Last 4 months
           }
         },
         include: {
@@ -134,12 +155,37 @@ export const getDashboardData = async (req: Request, res: Response) => {
       ? (presentCount / totalAttendanceRecords) * 100 
       : 0;
 
+    // Calculate monthly averages for last 4 months
+    const monthlyAverages: { month: string; present: number; absent: number }[] = [];
+    const currentDate = new Date();
+    
+    for (let i = 3; i >= 0; i--) {
+      const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+      const nextMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i + 1, 1);
+      
+      const monthRecords = attendanceData.filter(att => {
+        const attDate = new Date(att.date);
+        return attDate >= monthDate && attDate < nextMonthDate;
+      });
+      
+      const monthPresent = monthRecords.filter(att => att.present).length;
+      const monthAbsent = monthRecords.filter(att => !att.present).length;
+      
+      monthlyAverages.push({
+        month: monthDate.toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+        present: monthPresent,
+        absent: monthAbsent
+      });
+    }
+
     // Format the response
     const dashboardData = {
       schoolDetails: schoolDetails || null,
       counts: {
         students: studentsCount,
-        teachers: teachersCount
+        teachers: teachersCount,
+        boys: boysCount,
+        girls: girlsCount
       },
       upcomingEvents: upcomingEvents.map(event => ({
         id: event.id,
@@ -168,7 +214,8 @@ export const getDashboardData = async (req: Request, res: Response) => {
           present: presentCount,
           absent: absentCount,
           attendanceRate: Math.round(attendanceRate * 100) / 100 // Round to 2 decimal places
-        }
+        },
+        monthlyAverages: monthlyAverages
       }
     };
 
