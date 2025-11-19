@@ -128,6 +128,38 @@ export interface Parent {
   };
 }
 
+export interface Grade {
+  id: number;
+  level: number;
+  schoolId: number;
+  _count?: {
+    students: number;
+    classess: number;
+  };
+}
+
+export interface Class {
+  id: number;
+  name: string;
+  capacity: number;
+  schoolId: number;
+  gradeId: number;
+  supervisorId: number | null;
+  grade?: {
+    id: number;
+    level: number;
+  };
+  supervisor?: {
+    id: number;
+    name: string;
+    surname: string;
+  } | null;
+  _count?: {
+    students: number;
+    lessons: number;
+  };
+}
+
 export interface DashboardData {
   schoolDetails: SchoolDetails | null;
   counts: {
@@ -157,7 +189,7 @@ export const api = createApi({
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
   }),
   reducerPath: "api",
-  tagTypes: ["DashboardData", "Students", "Teachers", "Parents"],
+  tagTypes: ["DashboardData", "Students", "Teachers", "Parents", "Grades", "Classes"],
   endpoints: (build) => ({
     // Get dashboard data by schoolId
     getDashboardData: build.query<DashboardResponse, number>({
@@ -218,6 +250,41 @@ export const api = createApi({
       }),
       invalidatesTags: ["Parents"],
     }),
+    getGrades: build.query<{ success: boolean; data: Grade[] }, { schoolId: number }>({
+      query: ({ schoolId }) => ({
+        url: '/grades',
+        params: {
+          schoolId,
+        },
+      }),
+      providesTags: ["Grades"],
+    }),
+    createGrade: build.mutation<{ success: boolean; data: Grade }, Partial<Grade>>({
+      query: (newGrade) => ({
+        url: '/grades',
+        method: 'POST',
+        body: newGrade,
+      }),
+      invalidatesTags: ["Grades"],
+    }),
+    getClasses: build.query<{ success: boolean; data: Class[] }, { schoolId: number; search?: string }>({
+      query: ({ schoolId, search }) => ({
+        url: '/classes',
+        params: {
+          schoolId,
+          ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Classes"],
+    }),
+    createClass: build.mutation<{ success: boolean; data: Class }, Partial<Class>>({
+      query: (newClass) => ({
+        url: '/classes',
+        method: 'POST',
+        body: newClass,
+      }),
+      invalidatesTags: ["Classes"],
+    }),
   }),
 });
 
@@ -228,5 +295,9 @@ export const {
   useGetTeachersQuery,
   useCreateTeacherMutation,
   useGetParentsQuery,
-  useCreateParentMutation
+  useCreateParentMutation,
+  useGetGradesQuery,
+  useCreateGradeMutation,
+  useGetClassesQuery,
+  useCreateClassMutation
 } = api;

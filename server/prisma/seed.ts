@@ -113,6 +113,7 @@ async function main() {
       bloodType: "A+",
       sex: UserSex.FEMALE,
       birthday: new Date("1985-05-15"),
+      img: "https://i.pravatar.cc/150?img=1",
     },
     {
       username: "teacher_bob",
@@ -124,6 +125,7 @@ async function main() {
       bloodType: "O+",
       sex: UserSex.MALE,
       birthday: new Date("1980-08-20"),
+      img: "https://i.pravatar.cc/150?img=12",
     },
     {
       username: "teacher_carol",
@@ -135,6 +137,7 @@ async function main() {
       bloodType: "B+",
       sex: UserSex.FEMALE,
       birthday: new Date("1988-03-10"),
+      img: "https://i.pravatar.cc/150?img=5",
     },
     {
       username: "teacher_daniel",
@@ -146,6 +149,7 @@ async function main() {
       bloodType: "AB+",
       sex: UserSex.MALE,
       birthday: new Date("1982-11-25"),
+      img: "https://i.pravatar.cc/150?img=15",
     },
   ];
   const createdTeachers = [];
@@ -262,6 +266,7 @@ async function main() {
       classId: createdClasses[0]!.id,
       gradeId: createdGrades[0]!.id,
       birthday: new Date("2017-01-15"),
+      img: "https://i.pravatar.cc/150?img=20",
     },
     {
       username: "student_james",
@@ -275,6 +280,7 @@ async function main() {
       classId: createdClasses[0]!.id,
       gradeId: createdGrades[0]!.id,
       birthday: new Date("2017-03-20"),
+      img: "https://i.pravatar.cc/150?img=33",
     },
     {
       username: "student_sophia",
@@ -288,6 +294,7 @@ async function main() {
       classId: createdClasses[1]!.id,
       gradeId: createdGrades[0]!.id,
       birthday: new Date("2017-05-10"),
+      img: "https://i.pravatar.cc/150?img=47",
     },
     {
       username: "student_michael",
@@ -301,6 +308,7 @@ async function main() {
       classId: createdClasses[2]!.id,
       gradeId: createdGrades[1]!.id,
       birthday: new Date("2016-07-25"),
+      img: "https://i.pravatar.cc/150?img=52",
     },
     {
       username: "student_olivia",
@@ -314,6 +322,7 @@ async function main() {
       classId: createdClasses[3]!.id,
       gradeId: createdGrades[2]!.id,
       birthday: new Date("2015-09-12"),
+      img: "https://i.pravatar.cc/150?img=68",
     },
   ];
   const createdStudents = [];

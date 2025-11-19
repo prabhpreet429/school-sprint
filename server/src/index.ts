@@ -10,6 +10,8 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import teacherRoutes from "./routes/teacherRoutes.js";
 import parentRoutes from "./routes/parentRoutes.js";
+import gradeRoutes from "./routes/gradeRoutes.js";
+import classRoutes from "./routes/classRoutes.js";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -31,6 +33,8 @@ app.use("/dashboard", dashboardRoutes); // http://localhost:8000/dashboard?schoo
 app.use("/students", studentRoutes);
 app.use("/teachers", teacherRoutes);
 app.use("/parents", parentRoutes);
+app.use("/grades", gradeRoutes);
+app.use("/classes", classRoutes);
 
 /* SERVER */
 const port = Number(process.env.PORT) || 3001;

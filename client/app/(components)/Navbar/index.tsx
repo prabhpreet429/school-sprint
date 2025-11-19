@@ -2,9 +2,8 @@
 
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsDarkMode, setIsSidebarCollapsed } from "@/state";
-import { Bell, Menu, Moon, Settings, Sun } from "lucide-react";
+import { Bell, Menu, Moon, Sun } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import React from "react";
 
 const Navbar = () => {
@@ -32,18 +31,6 @@ const Navbar = () => {
         >
           <Menu className="w-4 h-4 text-gray-700 dark:text-gray-300" />
         </button>
-
-        <div className="relative">
-          <input
-            type="search"
-            placeholder="Start type to search groups & products"
-            className="pl-10 pr-4 py-2 w-50 md:w-60 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
-          />
-
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-non">
-            <Bell className="text-gray-500 dark:text-gray-400" size={20} />
-          </div>
-        </div>
       </div>
 
       {/* RIGHT SIDE */}
@@ -77,9 +64,6 @@ const Navbar = () => {
             <span className="font-semibold text-gray-900 dark:text-gray-100">Ed Roh</span>
           </div>
         </div>
-        <Link href="/settings">
-          <Settings className="cursor-pointer text-gray-500 dark:text-gray-400" size={24} />
-        </Link>
       </div>
     </div>
   );

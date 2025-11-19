@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useGetGradesQuery, useGetClassesQuery } from "@/state/api";
 
 type ParentFormData = {
   username: string;
@@ -59,6 +60,12 @@ const CreateStudentModal = ({
   onCreate,
   schoolId,
 }: CreateStudentModalProps) => {
+  // Fetch grades and classes
+  const { data: gradesData } = useGetGradesQuery({ schoolId });
+  const { data: classesData } = useGetClassesQuery({ schoolId, search: "" });
+  const grades = gradesData?.data || [];
+  const classes = classesData?.data || [];
+
   const [formData, setFormData] = useState<StudentFormData>({
     username: "",
     name: "",
@@ -468,43 +475,83 @@ const CreateStudentModal = ({
               )}
             </div>
 
-            {/* Class ID */}
-            <div>
+            {/* Image URL */}
+            <div className="col-span-2">
               <label className="block text-sm font-medium mb-1">
-                Class ID <span className="text-red-500">*</span>
+                Image URL
               </label>
               <Input
-                type="number"
-                name="classId"
-                value={formData.classId || ""}
-                onChange={(e) =>
-                  handleSelectChange("classId", e.target.value)
-                }
-                placeholder="Enter class ID"
-                className={errors.classId ? "border-red-500" : ""}
+                type="url"
+                name="img"
+                value={formData.img || ""}
+                onChange={handleChange}
+                placeholder="Enter image URL (optional)"
               />
-              {errors.classId && (
-                <p className="text-red-500 text-xs mt-1">{errors.classId}</p>
+              {formData.img && (
+                <div className="mt-2">
+                  <img
+                    src={formData.img}
+                    alt="Preview"
+                    className="w-20 h-20 object-cover rounded border"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                </div>
               )}
             </div>
 
-            {/* Grade ID */}
+            {/* Grade */}
             <div>
               <label className="block text-sm font-medium mb-1">
-                Grade ID <span className="text-red-500">*</span>
+                Grade <span className="text-red-500">*</span>
               </label>
-              <Input
-                type="number"
-                name="gradeId"
-                value={formData.gradeId || ""}
-                onChange={(e) =>
-                  handleSelectChange("gradeId", e.target.value)
-                }
-                placeholder="Enter grade ID"
-                className={errors.gradeId ? "border-red-500" : ""}
-              />
+              <Select
+                value={formData.gradeId ? formData.gradeId.toString() : ""}
+                onValueChange={(value) => handleSelectChange("gradeId", value)}
+              >
+                <SelectTrigger
+                  className={errors.gradeId ? "border-red-500" : "w-full"}
+                >
+                  <SelectValue placeholder="Select grade" />
+                </SelectTrigger>
+                <SelectContent>
+                  {grades.map((grade) => (
+                    <SelectItem key={grade.id} value={grade.id.toString()}>
+                      Grade {grade.level}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {errors.gradeId && (
                 <p className="text-red-500 text-xs mt-1">{errors.gradeId}</p>
+              )}
+            </div>
+
+            {/* Class */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Class <span className="text-red-500">*</span>
+              </label>
+              <Select
+                value={formData.classId ? formData.classId.toString() : ""}
+                onValueChange={(value) => handleSelectChange("classId", value)}
+              >
+                <SelectTrigger
+                  className={errors.classId ? "border-red-500" : "w-full"}
+                >
+                  <SelectValue placeholder="Select class" />
+                </SelectTrigger>
+                <SelectContent>
+                  {classes.map((classItem) => (
+                    <SelectItem key={classItem.id} value={classItem.id.toString()}>
+                      {classItem.name} {classItem.grade ? `(Grade ${classItem.grade.level})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.classId && (
+                <p className="text-red-500 text-xs mt-1">{errors.classId}</p>
               )}
             </div>
 

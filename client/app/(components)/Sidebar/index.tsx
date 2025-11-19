@@ -10,6 +10,8 @@ import {
   SlidersHorizontal,
   UserCheck,
   Users,
+  BookOpen,
+  School,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -134,6 +136,18 @@ const Sidebar = () => {
           href="/parents"
           icon={Users}
           label="Parents"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/grades"
+          icon={School}
+          label="Grades"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/classes"
+          icon={BookOpen}
+          label="Classes"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink

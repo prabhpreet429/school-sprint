@@ -331,6 +331,32 @@ const CreateTeacherModal = ({
                 <p className="text-red-500 text-xs mt-1">{errors.birthday}</p>
               )}
             </div>
+
+            {/* Image URL */}
+            <div className="col-span-2">
+              <label className="block text-sm font-medium mb-1">
+                Image URL
+              </label>
+              <Input
+                type="url"
+                name="img"
+                value={formData.img || ""}
+                onChange={handleChange}
+                placeholder="Enter image URL (optional)"
+              />
+              {formData.img && (
+                <div className="mt-2">
+                  <img
+                    src={formData.img}
+                    alt="Preview"
+                    className="w-20 h-20 object-cover rounded border"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           <DialogFooter>
