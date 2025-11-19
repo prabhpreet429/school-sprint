@@ -4,6 +4,9 @@ CREATE TYPE "UserSex" AS ENUM ('MALE', 'FEMALE');
 -- CreateEnum
 CREATE TYPE "Day" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY');
 
+-- CreateEnum
+CREATE TYPE "ParentRelationship" AS ENUM ('FATHER', 'MOTHER', 'GUARDIAN');
+
 -- CreateTable
 CREATE TABLE "School" (
     "id" SERIAL NOT NULL,
@@ -42,7 +45,6 @@ CREATE TABLE "Student" (
     "sex" "UserSex" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "schoolId" INTEGER NOT NULL,
-    "parentId" INTEGER NOT NULL,
     "classId" INTEGER NOT NULL,
     "gradeId" INTEGER NOT NULL,
     "birthday" TIMESTAMP(3) NOT NULL,
@@ -82,6 +84,17 @@ CREATE TABLE "Parent" (
     "schoolId" INTEGER NOT NULL,
 
     CONSTRAINT "Parent_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "StudentParent" (
+    "id" SERIAL NOT NULL,
+    "studentId" INTEGER NOT NULL,
+    "parentId" INTEGER NOT NULL,
+    "relationship" "ParentRelationship" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "StudentParent_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -241,6 +254,9 @@ CREATE UNIQUE INDEX "Parent_email_schoolId_key" ON "Parent"("email", "schoolId")
 CREATE UNIQUE INDEX "Parent_phone_schoolId_key" ON "Parent"("phone", "schoolId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "StudentParent_studentId_parentId_relationship_key" ON "StudentParent"("studentId", "parentId", "relationship");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Grade_level_schoolId_key" ON "Grade"("level", "schoolId");
 
 -- CreateIndex
@@ -259,9 +275,6 @@ ALTER TABLE "Admin" ADD CONSTRAINT "Admin_schoolId_fkey" FOREIGN KEY ("schoolId"
 ALTER TABLE "Student" ADD CONSTRAINT "Student_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Student" ADD CONSTRAINT "Student_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Parent"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Student" ADD CONSTRAINT "Student_classId_fkey" FOREIGN KEY ("classId") REFERENCES "Class"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -272,6 +285,12 @@ ALTER TABLE "Teacher" ADD CONSTRAINT "Teacher_schoolId_fkey" FOREIGN KEY ("schoo
 
 -- AddForeignKey
 ALTER TABLE "Parent" ADD CONSTRAINT "Parent_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StudentParent" ADD CONSTRAINT "StudentParent_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StudentParent" ADD CONSTRAINT "StudentParent_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Parent"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Grade" ADD CONSTRAINT "Grade_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;

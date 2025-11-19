@@ -67,7 +67,6 @@ export interface Student {
   sex: "MALE" | "FEMALE";
   createdAt: string;
   schoolId: number;
-  parentId: number;
   classId: number;
   gradeId: number;
   birthday: string;
@@ -75,11 +74,14 @@ export interface Student {
     id: number;
     name: string;
   };
-  parent?: {
-    id: number;
-    name: string;
-    surname: string;
-  };
+  studentParents?: {
+    relationship: "FATHER" | "MOTHER" | "GUARDIAN";
+    parent: {
+      id: number;
+      name: string;
+      surname: string;
+    };
+  }[];
   class?: {
     id: number;
     name: string;
@@ -104,6 +106,22 @@ export interface Teacher {
   createdAt: string;
   schoolId: number;
   birthday: string;
+  school?: {
+    id: number;
+    name: string;
+  };
+}
+
+export interface Parent {
+  id: number;
+  username: string;
+  name: string;
+  surname: string;
+  email: string | null;
+  phone: string;
+  address: string;
+  createdAt: string;
+  schoolId: number;
   school?: {
     id: number;
     name: string;
@@ -139,7 +157,7 @@ export const api = createApi({
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
   }),
   reducerPath: "api",
-  tagTypes: ["DashboardData", "Students", "Teachers"],
+  tagTypes: ["DashboardData", "Students", "Teachers", "Parents"],
   endpoints: (build) => ({
     // Get dashboard data by schoolId
     getDashboardData: build.query<DashboardResponse, number>({
@@ -182,6 +200,24 @@ export const api = createApi({
       }),
       invalidatesTags: ["Teachers"],
     }),
+    getParents: build.query<{ success: boolean; data: Parent[] }, { schoolId: number; search?: string }>({
+      query: ({ schoolId, search }) => ({
+        url: '/parents',
+        params: {
+          schoolId,
+          ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Parents"],
+    }),
+    createParent: build.mutation<{ success: boolean; data: Parent }, Partial<Parent>>({
+      query: (newParent) => ({
+        url: '/parents',
+        method: 'POST',
+        body: newParent,
+      }),
+      invalidatesTags: ["Parents"],
+    }),
   }),
 });
 
@@ -190,5 +226,7 @@ export const {
   useGetStudentsQuery,
   useCreateStudentMutation,
   useGetTeachersQuery,
-  useCreateTeacherMutation
+  useCreateTeacherMutation,
+  useGetParentsQuery,
+  useCreateParentMutation
 } = api;

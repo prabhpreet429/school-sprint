@@ -1,4 +1,4 @@
-import { PrismaClient, UserSex, Day } from "@prisma/client";
+import { PrismaClient, UserSex, Day, ParentRelationship } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -100,63 +100,7 @@ async function main() {
   }
   console.log(`✅ Created ${createdSubjects.length} subjects`);
 
-  // 5. Seed Parents (needs schoolId)
-  console.log("👨‍👩‍👧 Seeding Parents...");
-  const parentsData = [
-    {
-      username: "parent_john",
-      name: "John",
-      surname: "Smith",
-      email: "john.smith@email.com",
-      phone: "555-0101",
-      address: "123 Main St, City",
-    },
-    {
-      username: "parent_mary",
-      name: "Mary",
-      surname: "Johnson",
-      email: "mary.johnson@email.com",
-      phone: "555-0102",
-      address: "456 Oak Ave, City",
-    },
-    {
-      username: "parent_robert",
-      name: "Robert",
-      surname: "Williams",
-      email: "robert.williams@email.com",
-      phone: "555-0103",
-      address: "789 Pine Rd, City",
-    },
-    {
-      username: "parent_lisa",
-      name: "Lisa",
-      surname: "Brown",
-      email: "lisa.brown@email.com",
-      phone: "555-0104",
-      address: "321 Elm St, City",
-    },
-    {
-      username: "parent_david",
-      name: "David",
-      surname: "Jones",
-      email: "david.jones@email.com",
-      phone: "555-0105",
-      address: "654 Maple Dr, City",
-    },
-  ];
-  const createdParents = [];
-  for (const parent of parentsData) {
-    const created = await prisma.parent.create({
-      data: {
-        ...parent,
-        schoolId: school.id,
-      },
-    });
-    createdParents.push(created);
-  }
-  console.log(`✅ Created ${createdParents.length} parents`);
-
-  // 6. Seed Teachers (needs schoolId) - AFTER School is created
+  // 5. Seed Teachers (needs schoolId) - AFTER School is created
   console.log("👨‍🏫 Seeding Teachers...");
   const teachersData = [
     {
@@ -303,7 +247,7 @@ async function main() {
   }
   console.log(`✅ Created ${createdClasses.length} classes`);
 
-  // Seed Students (needs parentId, classId, gradeId, schoolId)
+  // Seed Students (needs classId, gradeId, schoolId) - parents will be created separately
   console.log("👨‍🎓 Seeding Students...");
   const studentsData = [
     {
@@ -315,7 +259,6 @@ async function main() {
       address: "123 Main St, City",
       bloodType: "A+",
       sex: UserSex.FEMALE,
-      parentId: createdParents[0]!.id,
       classId: createdClasses[0]!.id,
       gradeId: createdGrades[0]!.id,
       birthday: new Date("2017-01-15"),
@@ -329,7 +272,6 @@ async function main() {
       address: "456 Oak Ave, City",
       bloodType: "O+",
       sex: UserSex.MALE,
-      parentId: createdParents[1]!.id,
       classId: createdClasses[0]!.id,
       gradeId: createdGrades[0]!.id,
       birthday: new Date("2017-03-20"),
@@ -343,7 +285,6 @@ async function main() {
       address: "789 Pine Rd, City",
       bloodType: "B+",
       sex: UserSex.FEMALE,
-      parentId: createdParents[2]!.id,
       classId: createdClasses[1]!.id,
       gradeId: createdGrades[0]!.id,
       birthday: new Date("2017-05-10"),
@@ -357,7 +298,6 @@ async function main() {
       address: "321 Elm St, City",
       bloodType: "A-",
       sex: UserSex.MALE,
-      parentId: createdParents[3]!.id,
       classId: createdClasses[2]!.id,
       gradeId: createdGrades[1]!.id,
       birthday: new Date("2016-07-25"),
@@ -371,7 +311,6 @@ async function main() {
       address: "654 Maple Dr, City",
       bloodType: "O-",
       sex: UserSex.FEMALE,
-      parentId: createdParents[4]!.id,
       classId: createdClasses[3]!.id,
       gradeId: createdGrades[2]!.id,
       birthday: new Date("2015-09-12"),
@@ -388,6 +327,174 @@ async function main() {
     createdStudents.push(created);
   }
   console.log(`✅ Created ${createdStudents.length} students`);
+
+  // Seed Parents (needs schoolId only - no studentId)
+  console.log("👨‍👩 Seeding Parents...");
+  const parentsData = [
+    {
+      username: "parent_sarah_smith",
+      name: "Sarah",
+      surname: "Smith",
+      email: "sarah.smith@parent.com",
+      phone: "555-1001",
+      address: "123 Main St, City",
+    },
+    {
+      username: "parent_john_smith",
+      name: "John",
+      surname: "Smith",
+      email: "john.smith@parent.com",
+      phone: "555-1002",
+      address: "123 Main St, City",
+    },
+    {
+      username: "parent_mary_johnson",
+      name: "Mary",
+      surname: "Johnson",
+      email: "mary.johnson@parent.com",
+      phone: "555-1003",
+      address: "456 Oak Ave, City",
+    },
+    {
+      username: "parent_robert_johnson",
+      name: "Robert",
+      surname: "Johnson",
+      email: "robert.johnson@parent.com",
+      phone: "555-1004",
+      address: "456 Oak Ave, City",
+    },
+    {
+      username: "parent_lisa_williams",
+      name: "Lisa",
+      surname: "Williams",
+      email: "lisa.williams@parent.com",
+      phone: "555-1005",
+      address: "789 Pine Rd, City",
+    },
+    {
+      username: "parent_david_williams",
+      name: "David",
+      surname: "Williams",
+      email: "david.williams@parent.com",
+      phone: "555-1006",
+      address: "789 Pine Rd, City",
+    },
+    {
+      username: "parent_jennifer_brown",
+      name: "Jennifer",
+      surname: "Brown",
+      email: "jennifer.brown@parent.com",
+      phone: "555-1007",
+      address: "321 Elm St, City",
+    },
+    {
+      username: "parent_michael_brown",
+      name: "Michael",
+      surname: "Brown",
+      email: "michael.brown.sr@parent.com",
+      phone: "555-1008",
+      address: "321 Elm St, City",
+    },
+    {
+      username: "parent_patricia_jones",
+      name: "Patricia",
+      surname: "Jones",
+      email: "patricia.jones@parent.com",
+      phone: "555-1009",
+      address: "654 Maple Dr, City",
+    },
+    {
+      username: "parent_william_jones",
+      name: "William",
+      surname: "Jones",
+      email: "william.jones@parent.com",
+      phone: "555-1010",
+      address: "654 Maple Dr, City",
+    },
+  ];
+  const createdParents = [];
+  for (const parent of parentsData) {
+    const created = await prisma.parent.create({
+      data: {
+        ...parent,
+        schoolId: school.id,
+      },
+    });
+    createdParents.push(created);
+  }
+  console.log(`✅ Created ${createdParents.length} parents`);
+
+  // Seed StudentParent relationships (many-to-many)
+  console.log("🔗 Seeding Student-Parent Relationships...");
+  const studentParentRelationships = [
+    // student_emma (index 0) - has Sarah (mother) and John (father)
+    {
+      studentId: createdStudents[0]!.id,
+      parentId: createdParents[0]!.id,
+      relationship: ParentRelationship.MOTHER,
+    },
+    {
+      studentId: createdStudents[0]!.id,
+      parentId: createdParents[1]!.id,
+      relationship: ParentRelationship.FATHER,
+    },
+    // student_james (index 1) - has Mary (mother) and Robert (father)
+    {
+      studentId: createdStudents[1]!.id,
+      parentId: createdParents[2]!.id,
+      relationship: ParentRelationship.MOTHER,
+    },
+    {
+      studentId: createdStudents[1]!.id,
+      parentId: createdParents[3]!.id,
+      relationship: ParentRelationship.FATHER,
+    },
+    // student_sophia (index 2) - has Lisa (mother) and David (father)
+    {
+      studentId: createdStudents[2]!.id,
+      parentId: createdParents[4]!.id,
+      relationship: ParentRelationship.MOTHER,
+    },
+    {
+      studentId: createdStudents[2]!.id,
+      parentId: createdParents[5]!.id,
+      relationship: ParentRelationship.FATHER,
+    },
+    // student_michael (index 3) - has Jennifer (mother) and Michael (father)
+    {
+      studentId: createdStudents[3]!.id,
+      parentId: createdParents[6]!.id,
+      relationship: ParentRelationship.MOTHER,
+    },
+    {
+      studentId: createdStudents[3]!.id,
+      parentId: createdParents[7]!.id,
+      relationship: ParentRelationship.FATHER,
+    },
+    // student_olivia (index 4) - has Patricia (mother) and William (guardian)
+    {
+      studentId: createdStudents[4]!.id,
+      parentId: createdParents[8]!.id,
+      relationship: ParentRelationship.MOTHER,
+    },
+    {
+      studentId: createdStudents[4]!.id,
+      parentId: createdParents[9]!.id,
+      relationship: ParentRelationship.GUARDIAN,
+    },
+    // Example: Same parent (John Smith) is also father to another student (demonstrating many-to-many)
+    {
+      studentId: createdStudents[1]!.id,
+      parentId: createdParents[1]!.id,
+      relationship: ParentRelationship.FATHER,
+    },
+  ];
+  for (const relationship of studentParentRelationships) {
+    await prisma.studentParent.create({
+      data: relationship,
+    });
+  }
+  console.log(`✅ Created ${studentParentRelationships.length} student-parent relationships`);
 
   // Seed Lessons (needs subjectId, classId, teacherId, schoolId)
   console.log("📝 Seeding Lessons...");

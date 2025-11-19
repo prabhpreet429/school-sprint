@@ -9,6 +9,7 @@ import morgan from "morgan";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import teacherRoutes from "./routes/teacherRoutes.js";
+import parentRoutes from "./routes/parentRoutes.js";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -28,7 +29,8 @@ app.get("/hello", (req, res) => {
 /* ROUTES */
 app.use("/dashboard", dashboardRoutes); // http://localhost:8000/dashboard?schoolId=1
 app.use("/students", studentRoutes);
-app.use("/teachers", teacherRoutes); // http://localhost:8000/students
+app.use("/teachers", teacherRoutes);
+app.use("/parents", parentRoutes);
 
 /* SERVER */
 const port = Number(process.env.PORT) || 3001;

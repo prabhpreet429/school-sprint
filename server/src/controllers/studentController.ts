@@ -64,11 +64,16 @@ export const getStudents = async (req: Request, res: Response) => {
             name: true,
           },
         },
-        parent: {
+        studentParents: {
           select: {
-            id: true,
-            name: true,
-            surname: true,
+            relationship: true,
+            parent: {
+              select: {
+                id: true,
+                name: true,
+                surname: true,
+              },
+            },
           },
         },
         class: {
@@ -110,7 +115,7 @@ export const createStudent = async (req: Request, res: Response) => {
       bloodType,
       sex,
       schoolId,
-      parentId,
+      parents, // Array of parent objects with relationship
       classId,
       gradeId,
       birthday,
@@ -128,7 +133,6 @@ export const createStudent = async (req: Request, res: Response) => {
       bloodType,
       sex,
       schoolId,
-      parentId,
       classId,
       gradeId,
       birthday,
@@ -153,8 +157,8 @@ export const createStudent = async (req: Request, res: Response) => {
       });
     }
 
-    // Validate schoolId, parentId, classId, gradeId are numbers
-    const numericFields = { schoolId, parentId, classId, gradeId };
+    // Validate schoolId, classId, gradeId are numbers
+    const numericFields = { schoolId, classId, gradeId };
     for (const [field, value] of Object.entries(numericFields)) {
       if (isNaN(Number(value))) {
         return res.status(400).json({
@@ -162,6 +166,87 @@ export const createStudent = async (req: Request, res: Response) => {
           message: `${field} must be a valid number`,
         });
       }
+    }
+
+    // Validate parents array
+    if (!parents || !Array.isArray(parents) || parents.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one parent must be provided",
+      });
+    }
+
+    // Validate parent relationships and prepare parent data
+    const validRelationships = ["FATHER", "MOTHER", "GUARDIAN"];
+    const parentConnections: Array<{ parentId: number; relationship: string }> = [];
+
+    for (const parentData of parents) {
+      if (!parentData.relationship || !validRelationships.includes(parentData.relationship)) {
+        return res.status(400).json({
+          success: false,
+          message: `Parent relationship must be one of: ${validRelationships.join(", ")}`,
+        });
+      }
+      if (!parentData.username || !parentData.name || !parentData.surname || !parentData.address || !parentData.phone) {
+        return res.status(400).json({
+          success: false,
+          message: `Parent (${parentData.relationship}) missing required fields: username, name, surname, address, phone`,
+        });
+      }
+
+      // Check if parent already exists (by username in this school)
+      let existingParent = await prisma.parent.findFirst({
+        where: {
+          username: parentData.username,
+          schoolId: Number(schoolId),
+        },
+      });
+
+      // If not found by username, check by email (if provided)
+      if (!existingParent && parentData.email) {
+        existingParent = await prisma.parent.findFirst({
+          where: {
+            email: parentData.email,
+            schoolId: Number(schoolId),
+          },
+        });
+      }
+
+      // If not found by email, check by phone
+      if (!existingParent) {
+        existingParent = await prisma.parent.findFirst({
+          where: {
+            phone: parentData.phone,
+            schoolId: Number(schoolId),
+          },
+        });
+      }
+
+      let parentId: number;
+
+      if (existingParent) {
+        // Use existing parent
+        parentId = existingParent.id;
+      } else {
+        // Create new parent
+        const newParent = await prisma.parent.create({
+          data: {
+            username: parentData.username,
+            name: parentData.name,
+            surname: parentData.surname,
+            address: parentData.address,
+            phone: parentData.phone,
+            email: parentData.email || null,
+            schoolId: Number(schoolId),
+          },
+        });
+        parentId = newParent.id;
+      }
+
+      parentConnections.push({
+        parentId,
+        relationship: parentData.relationship,
+      });
     }
 
     // Validate birthday is a valid date
@@ -184,16 +269,6 @@ export const createStudent = async (req: Request, res: Response) => {
       });
     }
 
-    // Check if parent exists
-    const parent = await prisma.parent.findUnique({
-      where: { id: Number(parentId) },
-    });
-    if (!parent) {
-      return res.status(404).json({
-        success: false,
-        message: "Parent not found",
-      });
-    }
 
     // Check if class exists and belongs to the school
     const classRecord = await prisma.class.findUnique({
@@ -285,9 +360,14 @@ export const createStudent = async (req: Request, res: Response) => {
         bloodType,
         sex: sex as UserSex,
         schoolId: Number(schoolId),
-        parentId: Number(parentId),
         classId: Number(classId),
         gradeId: Number(gradeId),
+        studentParents: {
+          create: parentConnections.map((conn) => ({
+            parentId: conn.parentId,
+            relationship: conn.relationship as any,
+          })),
+        },
         birthday: birthdayDate,
         email: email || null,
         phone: phone || null,
@@ -300,11 +380,16 @@ export const createStudent = async (req: Request, res: Response) => {
             name: true,
           },
         },
-        parent: {
+        studentParents: {
           select: {
-            id: true,
-            name: true,
-            surname: true,
+            relationship: true,
+            parent: {
+              select: {
+                id: true,
+                name: true,
+                surname: true,
+              },
+            },
           },
         },
         class: {

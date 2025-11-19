@@ -1,12 +1,11 @@
 "use client";
 
-import { useGetStudentsQuery, useCreateStudentMutation } from "@/state/api";
+import { useGetParentsQuery } from "@/state/api";
 import Header from "@/app/(components)/Header";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { PlusCircleIcon, SearchIcon } from "lucide-react";
-import CreateStudentModal from "./CreateStudentModal";
+import { SearchIcon } from "lucide-react";
 
 const columns: GridColDef[] = [
   { field: "id", headerName: "ID", width: 90 },
@@ -23,62 +22,18 @@ const columns: GridColDef[] = [
     field: "phone",
     headerName: "Phone",
     width: 150,
-    valueGetter: (value, row) => row.phone || "N/A",
   },
   {
-    field: "sex",
-    headerName: "Gender",
-    width: 100,
-    valueGetter: (value, row) => row.sex === "MALE" ? "Male" : "Female",
-  },
-  {
-    field: "bloodType",
-    headerName: "Blood Type",
-    width: 120,
-  },
-  {
-    field: "class",
-    headerName: "Class",
-    width: 150,
-    valueGetter: (value, row) => row.class?.name || "N/A",
-  },
-  {
-    field: "grade",
-    headerName: "Grade",
-    width: 100,
-    valueGetter: (value, row) => row.grade?.level || "N/A",
-  },
-  {
-    field: "parents",
-    headerName: "Parents",
-    width: 300,
-    valueGetter: (value, row) => {
-      if (!row.studentParents || row.studentParents.length === 0) return "N/A";
-      return row.studentParents
-        .map((sp: any) => `${sp.relationship}: ${sp.parent.name} ${sp.parent.surname}`)
-        .join(", ");
-    },
-  },
-  {
-    field: "birthday",
-    headerName: "Birthday",
-    width: 150,
-    valueGetter: (value, row) => {
-      if (!row.birthday) return "N/A";
-      return new Date(row.birthday).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    },
+    field: "address",
+    headerName: "Address",
+    width: 200,
   },
 ];
 
-const Students = () => {
+const Parents = () => {
   const searchParams = useSearchParams();
   const schoolIdParam = searchParams?.get("schoolId");
   const [searchTerm, setSearchTerm] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Require schoolId - no fallback
   if (!schoolIdParam) {
@@ -104,38 +59,27 @@ const Students = () => {
   }
 
   const {
-    data: studentsData,
+    data: parentsData,
     isLoading,
     isError,
-  } = useGetStudentsQuery({
+  } = useGetParentsQuery({
     schoolId,
     search: searchTerm || undefined,
   });
-
-  const [createStudent] = useCreateStudentMutation();
-
-  const handleCreateStudent = async (studentData: any) => {
-    try {
-      await createStudent({ ...studentData, schoolId }).unwrap();
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error("Error creating student:", error);
-    }
-  };
 
   if (isLoading) {
     return <div className="py-4">Loading...</div>;
   }
 
-  if (isError || !studentsData) {
+  if (isError || !parentsData) {
     return (
       <div className="text-center text-red-500 py-4">
-        Failed to fetch students
+        Failed to fetch parents
       </div>
     );
   }
 
-  const students = studentsData?.data || [];
+  const parents = parentsData?.data || [];
 
   return (
     <div className="mx-auto pb-5 w-full">
@@ -145,7 +89,7 @@ const Students = () => {
           <SearchIcon className="w-5 h-5 text-gray-500 m-2" />
           <input
             className="w-full py-2 px-4 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            placeholder="Search students..."
+            placeholder="Search parents..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -154,20 +98,13 @@ const Students = () => {
 
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
-        <Header name="Students" />
-        <button
-          className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded cursor-pointer"
-          onClick={() => setIsModalOpen(true)}
-        >
-          <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Create
-          Student
-        </button>
+        <Header name="Parents" />
       </div>
 
-      {/* BODY STUDENTS LIST */}
+      {/* BODY PARENTS LIST */}
       <div className="w-full">
         <DataGrid
-          rows={students}
+          rows={parents}
           columns={columns}
           getRowId={(row) => row.id}
           checkboxSelection
@@ -191,16 +128,9 @@ const Students = () => {
           }}
         />
       </div>
-
-      {/* MODAL */}
-      <CreateStudentModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onCreate={handleCreateStudent}
-        schoolId={schoolId}
-      />
     </div>
   );
 };
 
-export default Students;
+export default Parents;
+
