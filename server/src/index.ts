@@ -12,6 +12,10 @@ import teacherRoutes from "./routes/teacherRoutes.js";
 import parentRoutes from "./routes/parentRoutes.js";
 import gradeRoutes from "./routes/gradeRoutes.js";
 import classRoutes from "./routes/classRoutes.js";
+import eventRoutes from "./routes/eventRoutes.js";
+import announcementRoutes from "./routes/announcementRoutes.js";
+import lessonRoutes from "./routes/lessonRoutes.js";
+import subjectRoutes from "./routes/subjectRoutes.js";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -35,6 +39,10 @@ app.use("/teachers", teacherRoutes);
 app.use("/parents", parentRoutes);
 app.use("/grades", gradeRoutes);
 app.use("/classes", classRoutes);
+app.use("/events", eventRoutes);
+app.use("/announcements", announcementRoutes);
+app.use("/lessons", lessonRoutes);
+app.use("/subjects", subjectRoutes);
 
 /* SERVER */
 const port = Number(process.env.PORT) || 3001;

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createClass, getClasses } from '../controllers/classController.ts';
+import { createClass, getClasses, updateClass, deleteClass } from '../controllers/classController.ts';
 
 const router = Router();
 
@@ -8,6 +8,12 @@ router.get('/', getClasses);
 
 // Route to create a new class
 router.post('/', createClass);
+
+// Route to update a class
+router.put('/:id', updateClass);
+
+// Route to delete a class
+router.delete('/:id', deleteClass);
 
 export default router;
 

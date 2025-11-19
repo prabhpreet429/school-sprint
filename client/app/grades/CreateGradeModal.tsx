@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,8 @@ interface CreateGradeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (gradeData: { level: number; schoolId: number }) => void;
+  onUpdate?: (id: number, gradeData: { level: number; schoolId: number }) => void;
+  initialData?: any;
   schoolId: number;
 }
 
@@ -23,13 +25,31 @@ const CreateGradeModal = ({
   isOpen,
   onClose,
   onCreate,
+  onUpdate,
+  initialData,
   schoolId,
 }: CreateGradeModalProps) => {
+  const isEditMode = !!initialData;
   const [formData, setFormData] = useState({
     level: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Populate form when initialData is provided (edit mode)
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setFormData({
+        level: initialData.level?.toString() || "",
+      });
+    } else if (isOpen && !initialData) {
+      // Reset form for create mode
+      setFormData({
+        level: "",
+      });
+      setErrors({});
+    }
+  }, [isOpen, initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,14 +86,20 @@ const CreateGradeModal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onCreate({
+      const gradeData = {
         level: Number(formData.level),
         schoolId,
-      });
-      // Reset form
-      setFormData({
-        level: "",
-      });
+      };
+      
+      if (isEditMode && onUpdate && initialData) {
+        onUpdate(initialData.id, gradeData);
+      } else {
+        onCreate(gradeData);
+        // Reset form only for create mode
+        setFormData({
+          level: "",
+        });
+      }
       setErrors({});
       onClose();
     }
@@ -83,9 +109,11 @@ const CreateGradeModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Create Grade</DialogTitle>
+          <DialogTitle>{isEditMode ? "Edit Grade" : "Create Grade"}</DialogTitle>
           <DialogDescription>
-            Fill in the grade information to create a new grade level.
+            {isEditMode 
+              ? "Update the grade level below."
+              : "Fill in the grade information to create a new grade level."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -120,7 +148,7 @@ const CreateGradeModal = ({
               Cancel
             </Button>
             <Button type="submit" className="cursor-pointer">
-              Create Grade
+              {isEditMode ? "Update Grade" : "Create Grade"}
             </Button>
           </DialogFooter>
         </form>

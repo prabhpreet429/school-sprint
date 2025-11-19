@@ -70,8 +70,12 @@ export const getStudents = async (req: Request, res: Response) => {
             parent: {
               select: {
                 id: true,
+                username: true,
                 name: true,
                 surname: true,
+                address: true,
+                phone: true,
+                email: true,
               },
             },
           },
@@ -250,7 +254,14 @@ export const createStudent = async (req: Request, res: Response) => {
     }
 
     // Validate birthday is a valid date
-    const birthdayDate = new Date(birthday);
+    // Parse date string as local date to avoid timezone issues
+    // If format is YYYY-MM-DD, parse it as local midnight
+    const birthdayDate = birthday.match(/^\d{4}-\d{2}-\d{2}$/) 
+      ? (() => {
+          const [year, month, day] = birthday.split('-').map(Number);
+          return new Date(year, month - 1, day);
+        })()
+      : new Date(birthday);
     if (isNaN(birthdayDate.getTime())) {
       return res.status(400).json({
         success: false,
@@ -386,8 +397,12 @@ export const createStudent = async (req: Request, res: Response) => {
             parent: {
               select: {
                 id: true,
+                username: true,
                 name: true,
                 surname: true,
+                address: true,
+                phone: true,
+                email: true,
               },
             },
           },
@@ -417,6 +432,328 @@ export const createStudent = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: "Failed to create student",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+export const updateStudent = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const {
+      username,
+      name,
+      surname,
+      address,
+      bloodType,
+      sex,
+      parents,
+      classId,
+      gradeId,
+      birthday,
+      email,
+      phone,
+      img,
+    } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Student ID is required",
+      });
+    }
+
+    const studentId = parseInt(id, 10);
+    if (isNaN(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID",
+      });
+    }
+
+    // Check if student exists
+    const existingStudent = await prisma.student.findUnique({
+      where: { id: studentId },
+    });
+
+    if (!existingStudent) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Validate required fields
+    const requiredFields = {
+      username,
+      name,
+      surname,
+      address,
+      bloodType,
+      sex,
+      classId,
+      gradeId,
+      birthday,
+    };
+
+    const missingFields = Object.entries(requiredFields)
+      .filter(([_, value]) => value === undefined || value === null || value === "")
+      .map(([key]) => key);
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Missing required fields: ${missingFields.join(", ")}`,
+      });
+    }
+
+    // Validate sex enum
+    if (sex !== UserSex.MALE && sex !== UserSex.FEMALE) {
+      return res.status(400).json({
+        success: false,
+        message: "sex must be either 'MALE' or 'FEMALE'",
+      });
+    }
+
+    // Check if username is already taken by another student in the same school
+    if (username !== existingStudent.username) {
+      const existingUsername = await prisma.student.findFirst({
+        where: {
+          username,
+          schoolId: existingStudent.schoolId,
+          id: { not: studentId },
+        },
+      });
+      if (existingUsername) {
+        return res.status(409).json({
+          success: false,
+          message: "Username already exists for this school",
+        });
+      }
+    }
+
+    // Check if email is already taken by another student in the same school (if provided)
+    if (email && email !== existingStudent.email) {
+      const existingEmail = await prisma.student.findFirst({
+        where: {
+          email,
+          schoolId: existingStudent.schoolId,
+          id: { not: studentId },
+        },
+      });
+      if (existingEmail) {
+        return res.status(409).json({
+          success: false,
+          message: "Email already exists for this school",
+        });
+      }
+    }
+
+    // Check if phone is already taken by another student in the same school (if provided)
+    if (phone && phone !== existingStudent.phone) {
+      const existingPhone = await prisma.student.findFirst({
+        where: {
+          phone,
+          schoolId: existingStudent.schoolId,
+          id: { not: studentId },
+        },
+      });
+      if (existingPhone) {
+        return res.status(409).json({
+          success: false,
+          message: "Phone already exists for this school",
+        });
+      }
+    }
+
+    // Validate classId and gradeId exist and belong to the school
+    const classExists = await prisma.class.findUnique({
+      where: { id: Number(classId) },
+    });
+    if (!classExists || classExists.schoolId !== existingStudent.schoolId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid classId or class does not belong to this school",
+      });
+    }
+
+    const gradeExists = await prisma.grade.findUnique({
+      where: { id: Number(gradeId) },
+    });
+    if (!gradeExists || gradeExists.schoolId !== existingStudent.schoolId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid gradeId or grade does not belong to this school",
+      });
+    }
+
+    // Handle parents update
+    let parentUpdateData: any = {};
+    if (parents && Array.isArray(parents) && parents.length > 0) {
+      // Delete existing student-parent relationships
+      await prisma.studentParent.deleteMany({
+        where: { studentId },
+      });
+
+      // Process parents similar to create
+      const parentConnections = [];
+      for (const parentData of parents) {
+        const { username, name, surname, address, phone, email, relationship } = parentData;
+
+        // Check if parent already exists
+        let parent = await prisma.parent.findFirst({
+          where: {
+            OR: [
+              { username, schoolId: existingStudent.schoolId },
+              ...(email ? [{ email, schoolId: existingStudent.schoolId }] : []),
+              ...(phone ? [{ phone, schoolId: existingStudent.schoolId }] : []),
+            ],
+          },
+        });
+
+        if (!parent) {
+          // Create new parent
+          parent = await prisma.parent.create({
+            data: {
+              username,
+              name,
+              surname,
+              address,
+              phone,
+              email: email || null,
+              schoolId: existingStudent.schoolId,
+            },
+          });
+        }
+
+        parentConnections.push({
+          parentId: parent.id,
+          relationship,
+        });
+      }
+
+      parentUpdateData = {
+        studentParents: {
+          create: parentConnections,
+        },
+      };
+    }
+
+    // Update the student
+    const updatedStudent = await prisma.student.update({
+      where: { id: studentId },
+      data: {
+        username,
+        name,
+        surname,
+        address,
+        bloodType,
+        sex,
+        classId: Number(classId),
+        gradeId: Number(gradeId),
+        birthday: new Date(birthday),
+        email: email || null,
+        phone: phone || null,
+        img: img || null,
+        ...parentUpdateData,
+      },
+      include: {
+        school: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        class: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        grade: {
+          select: {
+            id: true,
+            level: true,
+          },
+        },
+        studentParents: {
+          include: {
+            parent: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                surname: true,
+                address: true,
+                phone: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Student updated successfully",
+      data: updatedStudent,
+    });
+  } catch (error) {
+    console.error("Error updating student:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update student",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+export const deleteStudent = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Student ID is required",
+      });
+    }
+
+    const studentId = parseInt(id, 10);
+    if (isNaN(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID",
+      });
+    }
+
+    // Check if student exists
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+    });
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Delete the student (cascade will handle related records)
+    await prisma.student.delete({
+      where: { id: studentId },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Student deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting student:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete student",
       error: error instanceof Error ? error.message : "Unknown error",
     });
   }

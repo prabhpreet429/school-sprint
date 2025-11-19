@@ -12,6 +12,8 @@ import {
   Users,
   BookOpen,
   School,
+  Calendar,
+  Megaphone,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -148,6 +150,24 @@ const Sidebar = () => {
           href="/classes"
           icon={BookOpen}
           label="Classes"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/lessons"
+          icon={BookOpen}
+          label="Lessons"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/events"
+          icon={Calendar}
+          label="Events"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/announcements"
+          icon={Megaphone}
+          label="Announcements"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink

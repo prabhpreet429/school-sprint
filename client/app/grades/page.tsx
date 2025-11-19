@@ -1,33 +1,19 @@
 "use client";
 
-import { useGetGradesQuery, useCreateGradeMutation } from "@/state/api";
+import { useGetGradesQuery, useCreateGradeMutation, useUpdateGradeMutation, useDeleteGradeMutation } from "@/state/api";
 import Header from "@/app/(components)/Header";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { PlusCircleIcon } from "lucide-react";
+import { PlusCircleIcon, Edit, Trash2 } from "lucide-react";
 import CreateGradeModal from "./CreateGradeModal";
-
-const columns: GridColDef[] = [
-  { field: "id", headerName: "ID", width: 90 },
-  { 
-    field: "level", 
-    headerName: "Grade Level", 
-    width: 150,
-  },
-  {
-    field: "students",
-    headerName: "Students",
-    width: 120,
-    valueGetter: (value, row) => row._count?.students || 0,
-  },
-  {
-    field: "classes",
-    headerName: "Classes",
-    width: 120,
-    valueGetter: (value, row) => row._count?.classess || 0,
-  },
-];
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const Grades = () => {
   const searchParams = useSearchParams();
@@ -58,13 +44,43 @@ const Grades = () => {
 
   const { data, error, isLoading, isFetching } = useGetGradesQuery({ schoolId });
   const [createGrade, { isLoading: isCreating }] = useCreateGradeMutation();
+  const [updateGrade] = useUpdateGradeMutation();
+  const [deleteGrade] = useDeleteGradeMutation();
+  const [editingGrade, setEditingGrade] = useState<any>(null);
 
   const handleCreateGrade = async (gradeData: { level: number; schoolId: number }) => {
     try {
       await createGrade(gradeData).unwrap();
       setIsModalOpen(false);
+      setEditingGrade(null);
     } catch (error) {
       console.error("Failed to create grade:", error);
+    }
+  };
+
+  const handleUpdateGrade = async (id: number, gradeData: { level: number; schoolId: number }) => {
+    try {
+      await updateGrade({ id, data: gradeData }).unwrap();
+      setIsModalOpen(false);
+      setEditingGrade(null);
+    } catch (error) {
+      console.error("Error updating grade:", error);
+    }
+  };
+
+  const handleEditGrade = (grade: any) => {
+    setEditingGrade(grade);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteGrade = async (id: number) => {
+    if (window.confirm("Are you sure you want to delete this grade?")) {
+      try {
+        await deleteGrade(id).unwrap();
+      } catch (error) {
+        console.error("Error deleting grade:", error);
+        alert("Failed to delete grade");
+      }
     }
   };
 
@@ -103,36 +119,63 @@ const Grades = () => {
         </button>
       </div>
 
-      <div style={{ height: "calc(100vh - 200px)", width: "100%" }}>
-        <DataGrid
-          rows={grades}
-          columns={columns}
-          pageSizeOptions={[10, 25, 50, 100]}
-          disableRowSelectionOnClick
-          sx={{
-            "& .MuiDataGrid-cell:hover": {
-              color: "primary.main",
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "var(--color-muted)",
-              color: "var(--color-foreground)",
-            },
-            "& .MuiDataGrid-row": {
-              "&:nth-of-type(odd)": {
-                backgroundColor: "var(--color-muted)",
-              },
-              "&:hover": {
-                backgroundColor: "var(--color-accent)",
-              },
-            },
-          }}
-        />
+      <div className="w-full bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50 dark:bg-gray-900">
+              <TableHead>Grade Level</TableHead>
+              <TableHead>Students</TableHead>
+              <TableHead>Classes</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {grades.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  No grades found
+                </TableCell>
+              </TableRow>
+            ) : (
+              grades.map((grade: any) => (
+                <TableRow key={grade.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <TableCell>Grade {grade.level}</TableCell>
+                  <TableCell>{grade._count?.students || 0}</TableCell>
+                  <TableCell>{grade._count?.classess || 0}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEditGrade(grade)}
+                        className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteGrade(grade.id)}
+                        className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       <CreateGradeModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingGrade(null);
+        }}
         onCreate={handleCreateGrade}
+        onUpdate={handleUpdateGrade}
+        initialData={editingGrade}
         schoolId={schoolId}
       />
     </div>

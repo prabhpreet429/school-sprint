@@ -1,78 +1,19 @@
 "use client";
 
-import { useGetStudentsQuery, useCreateStudentMutation } from "@/state/api";
+import { useGetStudentsQuery, useCreateStudentMutation, useUpdateStudentMutation, useDeleteStudentMutation } from "@/state/api";
 import Header from "@/app/(components)/Header";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { PlusCircleIcon, SearchIcon } from "lucide-react";
+import { PlusCircleIcon, SearchIcon, Edit, Trash2 } from "lucide-react";
 import CreateStudentModal from "./CreateStudentModal";
-
-const columns: GridColDef[] = [
-  { field: "id", headerName: "ID", width: 90 },
-  { field: "username", headerName: "Username", width: 150 },
-  { field: "name", headerName: "First Name", width: 150 },
-  { field: "surname", headerName: "Last Name", width: 150 },
-  {
-    field: "email",
-    headerName: "Email",
-    width: 200,
-    valueGetter: (value, row) => row.email || "N/A",
-  },
-  {
-    field: "phone",
-    headerName: "Phone",
-    width: 150,
-    valueGetter: (value, row) => row.phone || "N/A",
-  },
-  {
-    field: "sex",
-    headerName: "Gender",
-    width: 100,
-    valueGetter: (value, row) => row.sex === "MALE" ? "Male" : "Female",
-  },
-  {
-    field: "bloodType",
-    headerName: "Blood Type",
-    width: 120,
-  },
-  {
-    field: "class",
-    headerName: "Class",
-    width: 150,
-    valueGetter: (value, row) => row.class?.name || "N/A",
-  },
-  {
-    field: "grade",
-    headerName: "Grade",
-    width: 100,
-    valueGetter: (value, row) => row.grade?.level || "N/A",
-  },
-  {
-    field: "parents",
-    headerName: "Parents",
-    width: 300,
-    valueGetter: (value, row) => {
-      if (!row.studentParents || row.studentParents.length === 0) return "N/A";
-      return row.studentParents
-        .map((sp: any) => `${sp.relationship}: ${sp.parent.name} ${sp.parent.surname}`)
-        .join(", ");
-    },
-  },
-  {
-    field: "birthday",
-    headerName: "Birthday",
-    width: 150,
-    valueGetter: (value, row) => {
-      if (!row.birthday) return "N/A";
-      return new Date(row.birthday).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    },
-  },
-];
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const Students = () => {
   const searchParams = useSearchParams();
@@ -113,13 +54,43 @@ const Students = () => {
   });
 
   const [createStudent] = useCreateStudentMutation();
+  const [updateStudent] = useUpdateStudentMutation();
+  const [deleteStudent] = useDeleteStudentMutation();
+  const [editingStudent, setEditingStudent] = useState<any>(null);
 
   const handleCreateStudent = async (studentData: any) => {
     try {
       await createStudent({ ...studentData, schoolId }).unwrap();
       setIsModalOpen(false);
+      setEditingStudent(null);
     } catch (error) {
       console.error("Error creating student:", error);
+    }
+  };
+
+  const handleUpdateStudent = async (id: number, studentData: any) => {
+    try {
+      await updateStudent({ id, data: { ...studentData, schoolId } }).unwrap();
+      setIsModalOpen(false);
+      setEditingStudent(null);
+    } catch (error) {
+      console.error("Error updating student:", error);
+    }
+  };
+
+  const handleEditStudent = (student: any) => {
+    setEditingStudent(student);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteStudent = async (id: number) => {
+    if (window.confirm("Are you sure you want to delete this student?")) {
+      try {
+        await deleteStudent(id).unwrap();
+      } catch (error) {
+        console.error("Error deleting student:", error);
+        alert("Failed to delete student");
+      }
     }
   };
 
@@ -165,38 +136,121 @@ const Students = () => {
       </div>
 
       {/* BODY STUDENTS LIST */}
-      <div className="w-full">
-        <DataGrid
-          rows={students}
-          columns={columns}
-          getRowId={(row) => row.id}
-          checkboxSelection
-          className="bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-700 !text-gray-700 dark:!text-gray-300"
-          sx={{
-            "& .MuiDataGrid-cell": {
-              color: "inherit",
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "rgb(249 250 251)",
-              color: "inherit",
-            },
-            "& .MuiDataGrid-footerContainer": {
-              backgroundColor: "rgb(249 250 251)",
-              color: "inherit",
-            },
-            "& .MuiDataGrid-toolbarContainer": {
-              backgroundColor: "rgb(249 250 251)",
-              color: "inherit",
-            },
-          }}
-        />
+      <div className="w-full bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50 dark:bg-gray-900">
+              <TableHead className="whitespace-nowrap">Image</TableHead>
+              <TableHead className="whitespace-nowrap">First Name</TableHead>
+              <TableHead className="whitespace-nowrap">Last Name</TableHead>
+              <TableHead className="whitespace-nowrap">Username</TableHead>
+              <TableHead className="whitespace-nowrap">Email</TableHead>
+              <TableHead className="whitespace-nowrap">Phone</TableHead>
+              <TableHead className="whitespace-nowrap">Gender</TableHead>
+              <TableHead className="whitespace-nowrap">Blood Type</TableHead>
+              <TableHead className="whitespace-nowrap">Class</TableHead>
+              <TableHead className="whitespace-nowrap">Parents</TableHead>
+              <TableHead className="whitespace-nowrap">Birthday</TableHead>
+              <TableHead className="whitespace-nowrap text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {students.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
+                  No students found
+                </TableCell>
+              </TableRow>
+            ) : (
+              students.map((student: any) => (
+                <TableRow key={student.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <TableCell className="whitespace-nowrap">
+                    {student.img ? (
+                      <img
+                        src={student.img}
+                        alt={`${student.name} ${student.surname}`}
+                        className="w-10 h-10 rounded-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                          e.currentTarget.nextElementSibling?.classList.remove("hidden");
+                        }}
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 text-sm font-medium">
+                        {student.name?.[0]?.toUpperCase() || "?"}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">{student.name}</TableCell>
+                  <TableCell className="whitespace-nowrap">{student.surname}</TableCell>
+                  <TableCell className="whitespace-nowrap">{student.username}</TableCell>
+                  <TableCell className="whitespace-nowrap">{student.email || "N/A"}</TableCell>
+                  <TableCell className="whitespace-nowrap">{student.phone || "N/A"}</TableCell>
+                  <TableCell className="whitespace-nowrap">{student.sex === "MALE" ? "Male" : "Female"}</TableCell>
+                  <TableCell className="whitespace-nowrap">{student.bloodType}</TableCell>
+                  <TableCell className="whitespace-nowrap">{student.class?.name || "N/A"}</TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {!student.studentParents || student.studentParents.length === 0
+                      ? "N/A"
+                      : student.studentParents
+                          .map((sp: any) => `${sp.relationship}: ${sp.parent.name} ${sp.parent.surname}`)
+                          .join(", ")}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {student.birthday
+                      ? (() => {
+                          // Extract date part directly to avoid timezone conversion
+                          const dateStr = typeof student.birthday === 'string' 
+                            ? student.birthday 
+                            : student.birthday.toISOString();
+                          const dateOnly = dateStr.includes('T') 
+                            ? dateStr.split('T')[0] 
+                            : dateStr;
+                          const [year, month, day] = dateOnly.split('-');
+                          const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                          return date.toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          });
+                        })()
+                      : "N/A"}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEditStudent(student)}
+                        className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteStudent(student.id)}
+                        className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* MODAL */}
       <CreateStudentModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingStudent(null);
+        }}
         onCreate={handleCreateStudent}
+        onUpdate={handleUpdateStudent}
+        initialData={editingStudent}
         schoolId={schoolId}
       />
     </div>

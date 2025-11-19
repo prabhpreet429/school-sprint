@@ -149,7 +149,7 @@ const Dashboard = () => {
         </div>
 
         {/* BOTTOM - ANNOUNCEMENTS */}
-        <Announcements />
+        <Announcements announcements={dashboardData?.announcements || []} />
       </div>
 
       {/* RIGHT */}

@@ -22,6 +22,14 @@ export interface UpcomingEvent {
   className: string | null;
 }
 
+export interface DashboardAnnouncement {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  className: string | null;
+}
+
 export interface Holiday {
   date: string;
   name: string;
@@ -160,6 +168,85 @@ export interface Class {
   };
 }
 
+export interface Event {
+  id: number;
+  title: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  schoolId: number;
+  classId: number | null;
+  class?: {
+    id: number;
+    name: string;
+    grade?: {
+      id: number;
+      level: number;
+    };
+  } | null;
+}
+
+export interface Announcement {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  schoolId: number;
+  classId: number | null;
+  class?: {
+    id: number;
+    name: string;
+    grade?: {
+      id: number;
+      level: number;
+    };
+  } | null;
+}
+
+export interface Subject {
+  id: number;
+  name: string;
+  schoolId: number;
+  _count?: {
+    teachers: number;
+    lessons: number;
+  };
+}
+
+export interface Lesson {
+  id: number;
+  name: string;
+  day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY";
+  startTime: string;
+  endTime: string;
+  schoolId: number;
+  subjectId: number;
+  classId: number;
+  teacherId: number;
+  subject?: {
+    id: number;
+    name: string;
+  };
+  class?: {
+    id: number;
+    name: string;
+    grade?: {
+      id: number;
+      level: number;
+    };
+  };
+  teacher?: {
+    id: number;
+    name: string;
+    surname: string;
+  };
+  _count?: {
+    attendances: number;
+    exams: number;
+    assignments: number;
+  };
+}
+
 export interface DashboardData {
   schoolDetails: SchoolDetails | null;
   counts: {
@@ -169,6 +256,7 @@ export interface DashboardData {
     girls: number;
   };
   upcomingEvents: UpcomingEvent[];
+  announcements: DashboardAnnouncement[];
   holidays: Holiday[];
   attendance: {
     recentRecords: AttendanceRecord[];
@@ -189,7 +277,7 @@ export const api = createApi({
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
   }),
   reducerPath: "api",
-  tagTypes: ["DashboardData", "Students", "Teachers", "Parents", "Grades", "Classes"],
+  tagTypes: ["DashboardData", "Students", "Teachers", "Parents", "Grades", "Classes", "Events", "Announcements", "Lessons", "Subjects"],
   endpoints: (build) => ({
     // Get dashboard data by schoolId
     getDashboardData: build.query<DashboardResponse, number>({
@@ -214,6 +302,21 @@ export const api = createApi({
       }),
       invalidatesTags: ["Students"],
     }),
+    updateStudent: build.mutation<{ success: boolean; data: Student }, { id: number; data: Partial<Student> }>({
+      query: ({ id, data }) => ({
+        url: `/students/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Students"],
+    }),
+    deleteStudent: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/students/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Students"],
+    }),
     getTeachers: build.query<{ success: boolean; data: Teacher[] }, { schoolId: number; search?: string }>({
       query: ({ schoolId, search }) => ({
         url: '/teachers',
@@ -229,6 +332,21 @@ export const api = createApi({
         url: '/teachers',
         method: 'POST',
         body: newTeacher,
+      }),
+      invalidatesTags: ["Teachers"],
+    }),
+    updateTeacher: build.mutation<{ success: boolean; data: Teacher }, { id: number; data: Partial<Teacher> }>({
+      query: ({ id, data }) => ({
+        url: `/teachers/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Teachers"],
+    }),
+    deleteTeacher: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/teachers/${id}`,
+        method: 'DELETE',
       }),
       invalidatesTags: ["Teachers"],
     }),
@@ -250,6 +368,21 @@ export const api = createApi({
       }),
       invalidatesTags: ["Parents"],
     }),
+    updateParent: build.mutation<{ success: boolean; data: Parent }, { id: number; data: Partial<Parent> }>({
+      query: ({ id, data }) => ({
+        url: `/parents/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Parents"],
+    }),
+    deleteParent: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/parents/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Parents"],
+    }),
     getGrades: build.query<{ success: boolean; data: Grade[] }, { schoolId: number }>({
       query: ({ schoolId }) => ({
         url: '/grades',
@@ -264,6 +397,21 @@ export const api = createApi({
         url: '/grades',
         method: 'POST',
         body: newGrade,
+      }),
+      invalidatesTags: ["Grades"],
+    }),
+    updateGrade: build.mutation<{ success: boolean; data: Grade }, { id: number; data: Partial<Grade> }>({
+      query: ({ id, data }) => ({
+        url: `/grades/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Grades"],
+    }),
+    deleteGrade: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/grades/${id}`,
+        method: 'DELETE',
       }),
       invalidatesTags: ["Grades"],
     }),
@@ -285,6 +433,130 @@ export const api = createApi({
       }),
       invalidatesTags: ["Classes"],
     }),
+    updateClass: build.mutation<{ success: boolean; data: Class }, { id: number; data: Partial<Class> }>({
+      query: ({ id, data }) => ({
+        url: `/classes/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Classes"],
+    }),
+    deleteClass: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/classes/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Classes"],
+    }),
+    getEvents: build.query<{ success: boolean; data: Event[] }, { schoolId: number; search?: string }>({
+      query: ({ schoolId, search }) => ({
+        url: '/events',
+        params: {
+          schoolId,
+          ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Events"],
+    }),
+    createEvent: build.mutation<{ success: boolean; data: Event }, Partial<Event>>({
+      query: (newEvent) => ({
+        url: '/events',
+        method: 'POST',
+        body: newEvent,
+      }),
+      invalidatesTags: ["Events"],
+    }),
+    updateEvent: build.mutation<{ success: boolean; data: Event }, { id: number; data: Partial<Event> }>({
+      query: ({ id, data }) => ({
+        url: `/events/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Events"],
+    }),
+    deleteEvent: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/events/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Events"],
+    }),
+    getAnnouncements: build.query<{ success: boolean; data: Announcement[] }, { schoolId: number; search?: string }>({
+      query: ({ schoolId, search }) => ({
+        url: '/announcements',
+        params: {
+          schoolId,
+          ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Announcements"],
+    }),
+    createAnnouncement: build.mutation<{ success: boolean; data: Announcement }, Partial<Announcement>>({
+      query: (newAnnouncement) => ({
+        url: '/announcements',
+        method: 'POST',
+        body: newAnnouncement,
+      }),
+      invalidatesTags: ["Announcements"],
+    }),
+    updateAnnouncement: build.mutation<{ success: boolean; data: Announcement }, { id: number; data: Partial<Announcement> }>({
+      query: ({ id, data }) => ({
+        url: `/announcements/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Announcements"],
+    }),
+    deleteAnnouncement: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/announcements/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Announcements"],
+    }),
+    getSubjects: build.query<{ success: boolean; data: Subject[] }, { schoolId: number; search?: string }>({
+      query: ({ schoolId, search }) => ({
+        url: '/subjects',
+        params: {
+          schoolId,
+          ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Subjects"],
+    }),
+    getLessons: build.query<{ success: boolean; data: Lesson[] }, { schoolId: number; search?: string }>({
+      query: ({ schoolId, search }) => ({
+        url: '/lessons',
+        params: {
+          schoolId,
+          ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Lessons"],
+    }),
+    createLesson: build.mutation<{ success: boolean; data: Lesson }, Partial<Lesson>>({
+      query: (newLesson) => ({
+        url: '/lessons',
+        method: 'POST',
+        body: newLesson,
+      }),
+      invalidatesTags: ["Lessons"],
+    }),
+    updateLesson: build.mutation<{ success: boolean; data: Lesson }, { id: number; data: Partial<Lesson> }>({
+      query: ({ id, data }) => ({
+        url: `/lessons/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Lessons"],
+    }),
+    deleteLesson: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/lessons/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Lessons"],
+    }),
   }),
 });
 
@@ -292,12 +564,35 @@ export const {
   useGetDashboardDataQuery,
   useGetStudentsQuery,
   useCreateStudentMutation,
+  useUpdateStudentMutation,
+  useDeleteStudentMutation,
   useGetTeachersQuery,
   useCreateTeacherMutation,
+  useUpdateTeacherMutation,
+  useDeleteTeacherMutation,
   useGetParentsQuery,
   useCreateParentMutation,
+  useUpdateParentMutation,
+  useDeleteParentMutation,
   useGetGradesQuery,
   useCreateGradeMutation,
+  useUpdateGradeMutation,
+  useDeleteGradeMutation,
   useGetClassesQuery,
-  useCreateClassMutation
+  useCreateClassMutation,
+  useUpdateClassMutation,
+  useDeleteClassMutation,
+  useGetEventsQuery,
+  useCreateEventMutation,
+  useUpdateEventMutation,
+  useDeleteEventMutation,
+  useGetAnnouncementsQuery,
+  useCreateAnnouncementMutation,
+  useUpdateAnnouncementMutation,
+  useDeleteAnnouncementMutation,
+  useGetSubjectsQuery,
+  useGetLessonsQuery,
+  useCreateLessonMutation,
+  useUpdateLessonMutation,
+  useDeleteLessonMutation
 } = api;

@@ -1,34 +1,19 @@
 "use client";
 
-import { useGetParentsQuery } from "@/state/api";
+import { useGetParentsQuery, useUpdateParentMutation, useDeleteParentMutation } from "@/state/api";
 import Header from "@/app/(components)/Header";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { SearchIcon } from "lucide-react";
-
-const columns: GridColDef[] = [
-  { field: "id", headerName: "ID", width: 90 },
-  { field: "username", headerName: "Username", width: 150 },
-  { field: "name", headerName: "First Name", width: 150 },
-  { field: "surname", headerName: "Last Name", width: 150 },
-  {
-    field: "email",
-    headerName: "Email",
-    width: 200,
-    valueGetter: (value, row) => row.email || "N/A",
-  },
-  {
-    field: "phone",
-    headerName: "Phone",
-    width: 150,
-  },
-  {
-    field: "address",
-    headerName: "Address",
-    width: 200,
-  },
-];
+import { SearchIcon, Edit, Trash2 } from "lucide-react";
+import CreateParentModal from "./CreateParentModal";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const Parents = () => {
   const searchParams = useSearchParams();
@@ -66,6 +51,36 @@ const Parents = () => {
     schoolId,
     search: searchTerm || undefined,
   });
+  const [updateParent] = useUpdateParentMutation();
+  const [deleteParent] = useDeleteParentMutation();
+  const [editingParent, setEditingParent] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleUpdateParent = async (id: number, parentData: any) => {
+    try {
+      await updateParent({ id, data: { ...parentData, schoolId } }).unwrap();
+      setIsModalOpen(false);
+      setEditingParent(null);
+    } catch (error) {
+      console.error("Error updating parent:", error);
+    }
+  };
+
+  const handleEditParent = (parent: any) => {
+    setEditingParent(parent);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteParent = async (id: number) => {
+    if (window.confirm("Are you sure you want to delete this parent?")) {
+      try {
+        await deleteParent(id).unwrap();
+      } catch (error) {
+        console.error("Error deleting parent:", error);
+        alert("Failed to delete parent");
+      }
+    }
+  };
 
   if (isLoading) {
     return <div className="py-4">Loading...</div>;
@@ -102,32 +117,72 @@ const Parents = () => {
       </div>
 
       {/* BODY PARENTS LIST */}
-      <div className="w-full">
-        <DataGrid
-          rows={parents}
-          columns={columns}
-          getRowId={(row) => row.id}
-          checkboxSelection
-          className="bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-700 !text-gray-700 dark:!text-gray-300"
-          sx={{
-            "& .MuiDataGrid-cell": {
-              color: "inherit",
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "rgb(249 250 251)",
-              color: "inherit",
-            },
-            "& .MuiDataGrid-footerContainer": {
-              backgroundColor: "rgb(249 250 251)",
-              color: "inherit",
-            },
-            "& .MuiDataGrid-toolbarContainer": {
-              backgroundColor: "rgb(249 250 251)",
-              color: "inherit",
-            },
-          }}
-        />
+      <div className="w-full bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50 dark:bg-gray-900">
+              <TableHead>Username</TableHead>
+              <TableHead>First Name</TableHead>
+              <TableHead>Last Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Address</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {parents.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  No parents found
+                </TableCell>
+              </TableRow>
+            ) : (
+              parents.map((parent: any) => (
+                <TableRow key={parent.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <TableCell>{parent.username}</TableCell>
+                  <TableCell>{parent.name}</TableCell>
+                  <TableCell>{parent.surname}</TableCell>
+                  <TableCell>{parent.email || "N/A"}</TableCell>
+                  <TableCell>{parent.phone}</TableCell>
+                  <TableCell>{parent.address}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEditParent(parent)}
+                        className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteParent(parent.id)}
+                        className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
+
+      {/* MODAL */}
+      <CreateParentModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingParent(null);
+        }}
+        onCreate={() => {}}
+        onUpdate={handleUpdateParent}
+        initialData={editingParent}
+        schoolId={schoolId}
+      />
     </div>
   );
 };

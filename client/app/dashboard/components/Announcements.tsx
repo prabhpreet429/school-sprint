@@ -2,17 +2,14 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Bell } from "lucide-react";
+import { DashboardAnnouncement } from "@/state/api";
+import { format } from "date-fns";
 
-const Announcements = () => {
-  // Placeholder for announcements - you can connect this to your API later
-  const announcements = [
-    {
-      id: 1,
-      title: "Welcome Back to School",
-      description: "Welcome all students back for the new academic year!",
-      date: new Date().toLocaleDateString(),
-    },
-  ];
+interface AnnouncementsProps {
+  announcements: DashboardAnnouncement[];
+}
+
+const Announcements = ({ announcements }: AnnouncementsProps) => {
 
   return (
     <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
@@ -34,7 +31,10 @@ const Announcements = () => {
                 <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
                   {announcement.description}
                 </p>
-                <p className="text-xs font-medium text-blue-600 dark:text-blue-400">{announcement.date}</p>
+                <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                  {format(new Date(announcement.date), "MMM dd, yyyy")}
+                  {announcement.className && ` • ${announcement.className}`}
+                </p>
               </div>
             ))
           ) : (

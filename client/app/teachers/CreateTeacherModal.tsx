@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +37,8 @@ interface CreateTeacherModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (teacherData: TeacherFormData) => void;
+  onUpdate?: (id: number, teacherData: TeacherFormData) => void;
+  initialData?: any;
   schoolId: number;
 }
 
@@ -44,8 +46,11 @@ const CreateTeacherModal = ({
   isOpen,
   onClose,
   onCreate,
+  onUpdate,
+  initialData,
   schoolId,
 }: CreateTeacherModalProps) => {
+  const isEditMode = !!initialData;
   const [formData, setFormData] = useState<TeacherFormData>({
     username: "",
     name: "",
@@ -61,6 +66,66 @@ const CreateTeacherModal = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Helper function to format date in local timezone (YYYY-MM-DD)
+  // Extracts date directly from ISO string to avoid timezone conversion issues
+  const formatDateLocal = (date: Date | string): string => {
+    if (!date) return "";
+    const dateStr = typeof date === 'string' ? date : date.toISOString();
+    // If it's an ISO string, extract the date part directly (YYYY-MM-DD)
+    if (dateStr.includes('T')) {
+      return dateStr.split('T')[0];
+    }
+    // If it's already in YYYY-MM-DD format, return as is
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return dateStr;
+    }
+    // Fallback: create date and format
+    const d = new Date(dateStr);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Populate form when initialData is provided (edit mode)
+  useEffect(() => {
+    if (isOpen && initialData) {
+      const birthdayDate = initialData.birthday 
+        ? formatDateLocal(initialData.birthday)
+        : "";
+      
+      setFormData({
+        username: initialData.username || "",
+        name: initialData.name || "",
+        surname: initialData.surname || "",
+        address: initialData.address || "",
+        bloodType: initialData.bloodType || "",
+        sex: initialData.sex || "MALE",
+        schoolId,
+        birthday: birthdayDate,
+        email: initialData.email || "",
+        phone: initialData.phone || "",
+        img: initialData.img || "",
+      });
+    } else if (isOpen && !initialData) {
+      // Reset form for create mode
+      setFormData({
+        username: "",
+        name: "",
+        surname: "",
+        address: "",
+        bloodType: "",
+        sex: "MALE",
+        schoolId,
+        birthday: "",
+        email: "",
+        phone: "",
+        img: "",
+      });
+      setErrors({});
+    }
+  }, [isOpen, initialData, schoolId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -134,21 +199,26 @@ const CreateTeacherModal = ({
         phone: formData.phone || undefined,
         img: formData.img || undefined,
       };
-      onCreate(teacherData);
-      // Reset form
-      setFormData({
-        username: "",
-        name: "",
-        surname: "",
-        address: "",
-        bloodType: "",
-        sex: "MALE",
-        schoolId,
-        birthday: "",
-        email: "",
-        phone: "",
-        img: "",
-      });
+      
+      if (isEditMode && onUpdate && initialData) {
+        onUpdate(initialData.id, teacherData);
+      } else {
+        onCreate(teacherData);
+        // Reset form only for create mode
+        setFormData({
+          username: "",
+          name: "",
+          surname: "",
+          address: "",
+          bloodType: "",
+          sex: "MALE",
+          schoolId,
+          birthday: "",
+          email: "",
+          phone: "",
+          img: "",
+        });
+      }
       setErrors({});
       onClose();
     }
@@ -160,9 +230,11 @@ const CreateTeacherModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Teacher</DialogTitle>
+          <DialogTitle>{isEditMode ? "Edit Teacher" : "Create Teacher"}</DialogTitle>
           <DialogDescription>
-            Fill in the teacher information to create a new teacher record.
+            {isEditMode 
+              ? "Update the teacher information below."
+              : "Fill in the teacher information to create a new teacher record."}
           </DialogDescription>
         </DialogHeader>
 
@@ -369,7 +441,7 @@ const CreateTeacherModal = ({
               Cancel
             </Button>
             <Button type="submit" className="cursor-pointer">
-              Create Teacher
+              {isEditMode ? "Update Teacher" : "Create Teacher"}
             </Button>
           </DialogFooter>
         </form>

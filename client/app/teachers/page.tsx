@@ -1,55 +1,19 @@
 "use client";
 
-import { useGetTeachersQuery, useCreateTeacherMutation } from "@/state/api";
+import { useGetTeachersQuery, useCreateTeacherMutation, useUpdateTeacherMutation, useDeleteTeacherMutation } from "@/state/api";
 import Header from "@/app/(components)/Header";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { PlusCircleIcon, SearchIcon } from "lucide-react";
+import { PlusCircleIcon, SearchIcon, Edit, Trash2 } from "lucide-react";
 import CreateTeacherModal from "./CreateTeacherModal";
-
-const columns: GridColDef[] = [
-  { field: "id", headerName: "ID", width: 90 },
-  { field: "username", headerName: "Username", width: 150 },
-  { field: "name", headerName: "First Name", width: 150 },
-  { field: "surname", headerName: "Last Name", width: 150 },
-  {
-    field: "email",
-    headerName: "Email",
-    width: 200,
-    valueGetter: (value, row) => row.email || "N/A",
-  },
-  {
-    field: "phone",
-    headerName: "Phone",
-    width: 150,
-    valueGetter: (value, row) => row.phone || "N/A",
-  },
-  {
-    field: "sex",
-    headerName: "Gender",
-    width: 100,
-    valueGetter: (value, row) => row.sex === "MALE" ? "Male" : "Female",
-  },
-  {
-    field: "bloodType",
-    headerName: "Blood Type",
-    width: 120,
-  },
-  {
-    field: "birthday",
-    headerName: "Birthday",
-    width: 150,
-    valueGetter: (value, row) => {
-      if (!row.birthday) return "N/A";
-      return new Date(row.birthday).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    },
-  },
-];
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const Teachers = () => {
   const searchParams = useSearchParams();
@@ -90,13 +54,43 @@ const Teachers = () => {
   });
 
   const [createTeacher] = useCreateTeacherMutation();
+  const [updateTeacher] = useUpdateTeacherMutation();
+  const [deleteTeacher] = useDeleteTeacherMutation();
+  const [editingTeacher, setEditingTeacher] = useState<any>(null);
 
   const handleCreateTeacher = async (teacherData: any) => {
     try {
       await createTeacher({ ...teacherData, schoolId }).unwrap();
       setIsModalOpen(false);
+      setEditingTeacher(null);
     } catch (error) {
       console.error("Error creating teacher:", error);
+    }
+  };
+
+  const handleUpdateTeacher = async (id: number, teacherData: any) => {
+    try {
+      await updateTeacher({ id, data: { ...teacherData, schoolId } }).unwrap();
+      setIsModalOpen(false);
+      setEditingTeacher(null);
+    } catch (error) {
+      console.error("Error updating teacher:", error);
+    }
+  };
+
+  const handleEditTeacher = (teacher: any) => {
+    setEditingTeacher(teacher);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteTeacher = async (id: number) => {
+    if (window.confirm("Are you sure you want to delete this teacher?")) {
+      try {
+        await deleteTeacher(id).unwrap();
+      } catch (error) {
+        console.error("Error deleting teacher:", error);
+        alert("Failed to delete teacher");
+      }
     }
   };
 
@@ -142,38 +136,111 @@ const Teachers = () => {
       </div>
 
       {/* BODY TEACHERS LIST */}
-      <div className="w-full">
-        <DataGrid
-          rows={teachers}
-          columns={columns}
-          getRowId={(row) => row.id}
-          checkboxSelection
-          className="bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-700 !text-gray-700 dark:!text-gray-300"
-          sx={{
-            "& .MuiDataGrid-cell": {
-              color: "inherit",
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "rgb(249 250 251)",
-              color: "inherit",
-            },
-            "& .MuiDataGrid-footerContainer": {
-              backgroundColor: "rgb(249 250 251)",
-              color: "inherit",
-            },
-            "& .MuiDataGrid-toolbarContainer": {
-              backgroundColor: "rgb(249 250 251)",
-              color: "inherit",
-            },
-          }}
-        />
+      <div className="w-full bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50 dark:bg-gray-900">
+              <TableHead>Image</TableHead>
+              <TableHead>First Name</TableHead>
+              <TableHead>Last Name</TableHead>
+              <TableHead>Username</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Gender</TableHead>
+              <TableHead>Blood Type</TableHead>
+              <TableHead>Birthday</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {teachers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                  No teachers found
+                </TableCell>
+              </TableRow>
+            ) : (
+              teachers.map((teacher: any) => (
+                <TableRow key={teacher.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <TableCell>
+                    {teacher.img ? (
+                      <img
+                        src={teacher.img}
+                        alt={`${teacher.name} ${teacher.surname}`}
+                        className="w-10 h-10 rounded-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                          e.currentTarget.nextElementSibling?.classList.remove("hidden");
+                        }}
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 text-sm font-medium">
+                        {teacher.name?.[0]?.toUpperCase() || "?"}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>{teacher.name}</TableCell>
+                  <TableCell>{teacher.surname}</TableCell>
+                  <TableCell>{teacher.username}</TableCell>
+                  <TableCell>{teacher.email || "N/A"}</TableCell>
+                  <TableCell>{teacher.phone || "N/A"}</TableCell>
+                  <TableCell>{teacher.sex === "MALE" ? "Male" : "Female"}</TableCell>
+                  <TableCell>{teacher.bloodType}</TableCell>
+                  <TableCell>
+                    {teacher.birthday
+                      ? (() => {
+                          // Extract date part directly to avoid timezone conversion
+                          const dateStr = typeof teacher.birthday === 'string' 
+                            ? teacher.birthday 
+                            : teacher.birthday.toISOString();
+                          const dateOnly = dateStr.includes('T') 
+                            ? dateStr.split('T')[0] 
+                            : dateStr;
+                          const [year, month, day] = dateOnly.split('-');
+                          const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                          return date.toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          });
+                        })()
+                      : "N/A"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEditTeacher(teacher)}
+                        className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTeacher(teacher.id)}
+                        className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* MODAL */}
       <CreateTeacherModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingTeacher(null);
+        }}
         onCreate={handleCreateTeacher}
+        onUpdate={handleUpdateTeacher}
+        initialData={editingTeacher}
         schoolId={schoolId}
       />
     </div>

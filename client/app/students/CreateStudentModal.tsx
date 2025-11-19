@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -51,6 +51,8 @@ interface CreateStudentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (studentData: StudentFormData) => void;
+  onUpdate?: (id: number, studentData: StudentFormData) => void;
+  initialData?: any;
   schoolId: number;
 }
 
@@ -58,8 +60,11 @@ const CreateStudentModal = ({
   isOpen,
   onClose,
   onCreate,
+  onUpdate,
+  initialData,
   schoolId,
 }: CreateStudentModalProps) => {
+  const isEditMode = !!initialData;
   // Fetch grades and classes
   const { data: gradesData } = useGetGradesQuery({ schoolId });
   const { data: classesData } = useGetClassesQuery({ schoolId, search: "" });
@@ -94,6 +99,100 @@ const CreateStudentModal = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Helper function to format date in local timezone (YYYY-MM-DD)
+  // Extracts date directly from ISO string to avoid timezone conversion issues
+  const formatDateLocal = (date: Date | string): string => {
+    if (!date) return "";
+    const dateStr = typeof date === 'string' ? date : date.toISOString();
+    // If it's an ISO string, extract the date part directly (YYYY-MM-DD)
+    if (dateStr.includes('T')) {
+      return dateStr.split('T')[0];
+    }
+    // If it's already in YYYY-MM-DD format, return as is
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return dateStr;
+    }
+    // Fallback: create date and format
+    const d = new Date(dateStr);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Populate form when initialData is provided (edit mode)
+  useEffect(() => {
+    if (isOpen && initialData) {
+      const birthdayDate = initialData.birthday 
+        ? formatDateLocal(initialData.birthday)
+        : "";
+      
+      const parents = initialData.studentParents && initialData.studentParents.length > 0
+        ? initialData.studentParents.map((sp: any) => ({
+            username: sp.parent.username || "",
+            name: sp.parent.name || "",
+            surname: sp.parent.surname || "",
+            address: sp.parent.address || "",
+            phone: sp.parent.phone || "",
+            email: sp.parent.email || "",
+            relationship: sp.relationship || "MOTHER",
+          }))
+        : [{
+            username: "",
+            name: "",
+            surname: "",
+            address: "",
+            phone: "",
+            email: "",
+            relationship: "MOTHER" as const,
+          }];
+
+      setFormData({
+        username: initialData.username || "",
+        name: initialData.name || "",
+        surname: initialData.surname || "",
+        address: initialData.address || "",
+        bloodType: initialData.bloodType || "",
+        sex: initialData.sex || "MALE",
+        schoolId,
+        parents,
+        classId: initialData.classId || initialData.class?.id || 0,
+        gradeId: initialData.gradeId || initialData.grade?.id || 0,
+        birthday: birthdayDate,
+        email: initialData.email || "",
+        phone: initialData.phone || "",
+        img: initialData.img || "",
+      });
+    } else if (isOpen && !initialData) {
+      // Reset form for create mode
+      setFormData({
+        username: "",
+        name: "",
+        surname: "",
+        address: "",
+        bloodType: "",
+        sex: "MALE",
+        schoolId,
+        parents: [{
+          username: "",
+          name: "",
+          surname: "",
+          address: "",
+          phone: "",
+          email: "",
+          relationship: "MOTHER",
+        }],
+        classId: 0,
+        gradeId: 0,
+        birthday: "",
+        email: "",
+        phone: "",
+        img: "",
+      });
+      setErrors({});
+    }
+  }, [isOpen, initialData, schoolId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -264,34 +363,39 @@ const CreateStudentModal = ({
           relationship: parent.relationship,
         })),
       };
-      onCreate(studentData);
-      // Reset form
-      setFormData({
-        username: "",
-        name: "",
-        surname: "",
-        address: "",
-        bloodType: "",
-        sex: "MALE",
-        schoolId,
-        parents: [
-          {
-            username: "",
-            name: "",
-            surname: "",
-            address: "",
-            phone: "",
-            email: "",
-            relationship: "MOTHER",
-          },
-        ],
-        classId: 0,
-        gradeId: 0,
-        birthday: "",
-        email: "",
-        phone: "",
-        img: "",
-      });
+      
+      if (isEditMode && onUpdate && initialData) {
+        onUpdate(initialData.id, studentData);
+      } else {
+        onCreate(studentData);
+        // Reset form only for create mode
+        setFormData({
+          username: "",
+          name: "",
+          surname: "",
+          address: "",
+          bloodType: "",
+          sex: "MALE",
+          schoolId,
+          parents: [
+            {
+              username: "",
+              name: "",
+              surname: "",
+              address: "",
+              phone: "",
+              email: "",
+              relationship: "MOTHER",
+            },
+          ],
+          classId: 0,
+          gradeId: 0,
+          birthday: "",
+          email: "",
+          phone: "",
+          img: "",
+        });
+      }
       setErrors({});
       onClose();
     }
@@ -303,9 +407,11 @@ const CreateStudentModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Student</DialogTitle>
+          <DialogTitle>{isEditMode ? "Edit Student" : "Create Student"}</DialogTitle>
           <DialogDescription>
-            Fill in the student information to create a new student record.
+            {isEditMode 
+              ? "Update the student information below."
+              : "Fill in the student information to create a new student record."}
           </DialogDescription>
         </DialogHeader>
 
@@ -768,7 +874,7 @@ const CreateStudentModal = ({
               Cancel
             </Button>
             <Button type="submit" className="cursor-pointer">
-              Create Student
+              {isEditMode ? "Update Student" : "Create Student"}
             </Button>
           </DialogFooter>
         </form>

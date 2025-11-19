@@ -32,6 +32,8 @@ interface CreateClassModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (classData: ClassFormData) => void;
+  onUpdate?: (id: number, classData: ClassFormData) => void;
+  initialData?: any;
   schoolId: number;
 }
 
@@ -39,8 +41,11 @@ const CreateClassModal = ({
   isOpen,
   onClose,
   onCreate,
+  onUpdate,
+  initialData,
   schoolId,
 }: CreateClassModalProps) => {
+  const isEditMode = !!initialData;
   const [formData, setFormData] = useState<ClassFormData>({
     name: "",
     capacity: 0,
@@ -56,6 +61,29 @@ const CreateClassModal = ({
   const { data: teachersData } = useGetTeachersQuery({ schoolId, search: "" });
   const grades = gradesData?.data || [];
   const teachers = teachersData?.data || [];
+
+  // Populate form when initialData is provided (edit mode)
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setFormData({
+        name: initialData.name || "",
+        capacity: initialData.capacity || 0,
+        schoolId,
+        gradeId: initialData.gradeId || initialData.grade?.id || 0,
+        supervisorId: initialData.supervisorId || initialData.supervisor?.id || undefined,
+      });
+    } else if (isOpen && !initialData) {
+      // Reset form for create mode
+      setFormData({
+        name: "",
+        capacity: 0,
+        schoolId,
+        gradeId: 0,
+        supervisorId: undefined,
+      });
+      setErrors({});
+    }
+  }, [isOpen, initialData, schoolId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -108,21 +136,27 @@ const CreateClassModal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onCreate({
+      const classData = {
         name: formData.name,
         capacity: Number(formData.capacity),
         schoolId,
         gradeId: Number(formData.gradeId),
         supervisorId: formData.supervisorId || undefined,
-      });
-      // Reset form
-      setFormData({
-        name: "",
-        capacity: 0,
-        schoolId,
-        gradeId: 0,
-        supervisorId: undefined,
-      });
+      };
+      
+      if (isEditMode && onUpdate && initialData) {
+        onUpdate(initialData.id, classData);
+      } else {
+        onCreate(classData);
+        // Reset form only for create mode
+        setFormData({
+          name: "",
+          capacity: 0,
+          schoolId,
+          gradeId: 0,
+          supervisorId: undefined,
+        });
+      }
       setErrors({});
       onClose();
     }
@@ -132,9 +166,11 @@ const CreateClassModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create Class</DialogTitle>
+          <DialogTitle>{isEditMode ? "Edit Class" : "Create Class"}</DialogTitle>
           <DialogDescription>
-            Fill in the class information to create a new class.
+            {isEditMode 
+              ? "Update the class information below."
+              : "Fill in the class information to create a new class."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -236,7 +272,7 @@ const CreateClassModal = ({
               Cancel
             </Button>
             <Button type="submit" className="cursor-pointer">
-              Create Class
+              {isEditMode ? "Update Class" : "Create Class"}
             </Button>
           </DialogFooter>
         </form>

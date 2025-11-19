@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createStudent, getStudents } from '../controllers/studentController.ts';
+import { createStudent, getStudents, updateStudent, deleteStudent } from '../controllers/studentController.ts';
 
 const router = Router();
 
@@ -8,5 +8,11 @@ router.get('/', getStudents);
 
 // Route to create a new student
 router.post('/', createStudent);
+
+// Route to update a student
+router.put('/:id', updateStudent);
+
+// Route to delete a student
+router.delete('/:id', deleteStudent);
 
 export default router;

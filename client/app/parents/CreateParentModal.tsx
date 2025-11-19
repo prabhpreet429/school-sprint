@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,8 @@ interface CreateParentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (parentData: ParentFormData) => void;
+  onUpdate?: (id: number, parentData: ParentFormData) => void;
+  initialData?: any;
   schoolId: number;
 }
 
@@ -33,8 +35,11 @@ const CreateParentModal = ({
   isOpen,
   onClose,
   onCreate,
+  onUpdate,
+  initialData,
   schoolId,
 }: CreateParentModalProps) => {
+  const isEditMode = !!initialData;
   const [formData, setFormData] = useState<ParentFormData>({
     username: "",
     name: "",
@@ -46,6 +51,33 @@ const CreateParentModal = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Populate form when initialData is provided (edit mode)
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setFormData({
+        username: initialData.username || "",
+        name: initialData.name || "",
+        surname: initialData.surname || "",
+        address: initialData.address || "",
+        schoolId,
+        phone: initialData.phone || "",
+        email: initialData.email || "",
+      });
+    } else if (isOpen && !initialData) {
+      // Reset form for create mode
+      setFormData({
+        username: "",
+        name: "",
+        surname: "",
+        address: "",
+        schoolId,
+        phone: "",
+        email: "",
+      });
+      setErrors({});
+    }
+  }, [isOpen, initialData, schoolId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -94,17 +126,22 @@ const CreateParentModal = ({
         ...formData,
         email: formData.email || undefined,
       };
-      onCreate(parentData);
-      // Reset form
-      setFormData({
-        username: "",
-        name: "",
-        surname: "",
-        address: "",
-        schoolId,
-        phone: "",
-        email: "",
-      });
+      
+      if (isEditMode && onUpdate && initialData) {
+        onUpdate(initialData.id, parentData);
+      } else {
+        onCreate(parentData);
+        // Reset form only for create mode
+        setFormData({
+          username: "",
+          name: "",
+          surname: "",
+          address: "",
+          schoolId,
+          phone: "",
+          email: "",
+        });
+      }
       setErrors({});
       onClose();
     }
@@ -114,9 +151,11 @@ const CreateParentModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Parent</DialogTitle>
+          <DialogTitle>{isEditMode ? "Edit Parent" : "Create Parent"}</DialogTitle>
           <DialogDescription>
-            Fill in the parent information to create a new parent record.
+            {isEditMode 
+              ? "Update the parent information below."
+              : "Fill in the parent information to create a new parent record."}
           </DialogDescription>
         </DialogHeader>
 
@@ -231,7 +270,7 @@ const CreateParentModal = ({
               Cancel
             </Button>
             <Button type="submit" className="cursor-pointer">
-              Create Parent
+              {isEditMode ? "Update Parent" : "Create Parent"}
             </Button>
           </DialogFooter>
         </form>

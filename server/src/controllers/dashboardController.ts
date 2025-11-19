@@ -59,6 +59,7 @@ export const getDashboardData = async (req: Request, res: Response) => {
     // Fetch all data in parallel for better performance
     const [
       upcomingEvents,
+      announcements,
       studentsCount,
       teachersCount,
       schoolDetails,
@@ -76,6 +77,25 @@ export const getDashboardData = async (req: Request, res: Response) => {
           startTime: 'asc'
         },
         take: 10, // Limit to 10 upcoming events
+        include: {
+          class: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
+        }
+      }),
+
+      // Get recent announcements (ordered by date, most recent first)
+      prisma.announcement.findMany({
+        where: {
+          schoolId
+        },
+        orderBy: {
+          date: 'desc'
+        },
+        take: 10, // Limit to 10 most recent announcements
         include: {
           class: {
             select: {
@@ -201,6 +221,13 @@ export const getDashboardData = async (req: Request, res: Response) => {
         startTime: event.startTime,
         endTime: event.endTime,
         className: event.class?.name || null
+      })),
+      announcements: announcements.map(announcement => ({
+        id: announcement.id,
+        title: announcement.title,
+        description: announcement.description,
+        date: announcement.date,
+        className: announcement.class?.name || null
       })),
       holidays: holidays.map(holiday => ({
         date: holiday.date.toISOString(),

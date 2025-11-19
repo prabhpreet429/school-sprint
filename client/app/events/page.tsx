@@ -1,11 +1,12 @@
 "use client";
 
-import { useGetClassesQuery, useCreateClassMutation, useUpdateClassMutation, useGetGradesQuery, useDeleteClassMutation } from "@/state/api";
+import { useGetEventsQuery, useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation } from "@/state/api";
 import Header from "@/app/(components)/Header";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { PlusCircleIcon, SearchIcon, Edit, Trash2 } from "lucide-react";
-import CreateClassModal from "./CreateClassModal";
+import CreateEventModal from "./CreateEventModal";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -15,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const Classes = () => {
+const Events = () => {
   const searchParams = useSearchParams();
   const schoolIdParam = searchParams?.get("schoolId");
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,47 +44,47 @@ const Classes = () => {
     );
   }
 
-  const { data, error, isLoading, isFetching } = useGetClassesQuery({ 
+  const { data, error, isLoading, isFetching } = useGetEventsQuery({ 
     schoolId, 
     search: searchTerm || undefined 
   });
-  const [createClass, { isLoading: isCreating }] = useCreateClassMutation();
-  const [updateClass] = useUpdateClassMutation();
-  const [deleteClass] = useDeleteClassMutation();
-  const [editingClass, setEditingClass] = useState<any>(null);
+  const [createEvent, { isLoading: isCreating }] = useCreateEventMutation();
+  const [updateEvent] = useUpdateEventMutation();
+  const [deleteEvent] = useDeleteEventMutation();
+  const [editingEvent, setEditingEvent] = useState<any>(null);
 
-  const handleCreateClass = async (classData: any) => {
+  const handleCreateEvent = async (eventData: any) => {
     try {
-      await createClass(classData).unwrap();
+      await createEvent(eventData).unwrap();
       setIsModalOpen(false);
-      setEditingClass(null);
+      setEditingEvent(null);
     } catch (error) {
-      console.error("Failed to create class:", error);
+      console.error("Failed to create event:", error);
     }
   };
 
-  const handleUpdateClass = async (id: number, classData: any) => {
+  const handleUpdateEvent = async (id: number, eventData: any) => {
     try {
-      await updateClass({ id, data: classData }).unwrap();
+      await updateEvent({ id, data: eventData }).unwrap();
       setIsModalOpen(false);
-      setEditingClass(null);
+      setEditingEvent(null);
     } catch (error) {
-      console.error("Error updating class:", error);
+      console.error("Error updating event:", error);
     }
   };
 
-  const handleEditClass = (classItem: any) => {
-    setEditingClass(classItem);
+  const handleEditEvent = (event: any) => {
+    setEditingEvent(event);
     setIsModalOpen(true);
   };
 
-  const handleDeleteClass = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this class?")) {
+  const handleDeleteEvent = async (id: number) => {
+    if (window.confirm("Are you sure you want to delete this event?")) {
       try {
-        await deleteClass(id).unwrap();
+        await deleteEvent(id).unwrap();
       } catch (error) {
-        console.error("Error deleting class:", error);
-        alert("Failed to delete class");
+        console.error("Error deleting event:", error);
+        alert("Failed to delete event");
       }
     }
   };
@@ -108,7 +109,7 @@ const Classes = () => {
     );
   }
 
-  const classes = data?.data || [];
+  const events = data?.data || [];
 
   return (
     <div className="p-4">
@@ -118,7 +119,7 @@ const Classes = () => {
           <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
-            placeholder="Search classes..."
+            placeholder="Search events..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
@@ -127,13 +128,13 @@ const Classes = () => {
       </div>
 
       <div className="mb-6 flex justify-between items-center">
-        <Header name="Classes" />
+        <Header name="Events" />
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer"
         >
           <PlusCircleIcon size={20} />
-          Create Class
+          Create Event
         </button>
       </div>
 
@@ -141,46 +142,44 @@ const Classes = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50 dark:bg-gray-900">
-              <TableHead>Class Name</TableHead>
-              <TableHead>Grade</TableHead>
-              <TableHead>Capacity</TableHead>
-              <TableHead>Students</TableHead>
-              <TableHead>Lessons</TableHead>
-              <TableHead>Supervisor</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Start Time</TableHead>
+              <TableHead>End Time</TableHead>
+              <TableHead>Class</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {classes.length === 0 ? (
+            {events.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                  No classes found
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  No events found
                 </TableCell>
               </TableRow>
             ) : (
-              classes.map((classItem: any) => (
-                <TableRow key={classItem.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
-                  <TableCell>{classItem.name}</TableCell>
-                  <TableCell>{classItem.grade ? `Grade ${classItem.grade.level}` : "N/A"}</TableCell>
-                  <TableCell>{classItem.capacity}</TableCell>
-                  <TableCell>{classItem._count?.students || 0}</TableCell>
-                  <TableCell>{classItem._count?.lessons || 0}</TableCell>
+              events.map((event: any) => (
+                <TableRow key={event.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <TableCell className="font-medium">{event.title}</TableCell>
                   <TableCell>
-                    {classItem.supervisor
-                      ? `${classItem.supervisor.name} ${classItem.supervisor.surname}`
-                      : "N/A"}
+                    <div className="max-w-[300px] truncate" title={event.description}>
+                      {event.description}
+                    </div>
                   </TableCell>
+                  <TableCell>{format(new Date(event.startTime), "MMM dd, yyyy HH:mm")}</TableCell>
+                  <TableCell>{format(new Date(event.endTime), "MMM dd, yyyy HH:mm")}</TableCell>
+                  <TableCell>{event.class?.name || "All Classes"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => handleEditClass(classItem)}
+                        onClick={() => handleEditEvent(event)}
                         className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
                         title="Edit"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDeleteClass(classItem.id)}
+                        onClick={() => handleDeleteEvent(event.id)}
                         className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
                         title="Delete"
                       >
@@ -195,20 +194,20 @@ const Classes = () => {
         </Table>
       </div>
 
-      <CreateClassModal
+      <CreateEventModal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          setEditingClass(null);
+          setEditingEvent(null);
         }}
-        onCreate={handleCreateClass}
-        onUpdate={handleUpdateClass}
-        initialData={editingClass}
+        onCreate={handleCreateEvent}
+        onUpdate={handleUpdateEvent}
+        initialData={editingEvent}
         schoolId={schoolId}
       />
     </div>
   );
 };
 
-export default Classes;
+export default Events;
 

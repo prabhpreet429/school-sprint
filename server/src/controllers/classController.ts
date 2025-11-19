@@ -248,3 +248,230 @@ export const createClass = async (req: Request, res: Response) => {
   }
 };
 
+export const updateClass = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      capacity,
+      gradeId,
+      supervisorId,
+    } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Class ID is required",
+      });
+    }
+
+    const classId = parseInt(id, 10);
+    if (isNaN(classId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid class ID",
+      });
+    }
+
+    // Check if class exists
+    const existingClass = await prisma.class.findUnique({
+      where: { id: classId },
+    });
+
+    if (!existingClass) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found",
+      });
+    }
+
+    // Validate required fields
+    const requiredFields = {
+      name,
+      capacity,
+      gradeId,
+    };
+
+    const missingFields = Object.entries(requiredFields)
+      .filter(([_, value]) => value === undefined || value === null || value === "")
+      .map(([key]) => key);
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Missing required fields: ${missingFields.join(", ")}`,
+      });
+    }
+
+    // Validate numeric fields
+    if (isNaN(Number(capacity)) || Number(capacity) < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "capacity must be a valid positive number",
+      });
+    }
+
+    if (isNaN(Number(gradeId))) {
+      return res.status(400).json({
+        success: false,
+        message: "gradeId must be a valid number",
+      });
+    }
+
+    if (supervisorId !== undefined && supervisorId !== null && isNaN(Number(supervisorId))) {
+      return res.status(400).json({
+        success: false,
+        message: "supervisorId must be a valid number",
+      });
+    }
+
+    // Check if grade exists and belongs to the school
+    const grade = await prisma.grade.findUnique({
+      where: { id: Number(gradeId) },
+    });
+    if (!grade) {
+      return res.status(404).json({
+        success: false,
+        message: "Grade not found",
+      });
+    }
+    if (grade.schoolId !== existingClass.schoolId) {
+      return res.status(400).json({
+        success: false,
+        message: "Grade does not belong to the specified school",
+      });
+    }
+
+    // Check if supervisor exists and belongs to the school (if provided)
+    if (supervisorId) {
+      const supervisor = await prisma.teacher.findUnique({
+        where: { id: Number(supervisorId) },
+      });
+      if (!supervisor) {
+        return res.status(404).json({
+          success: false,
+          message: "Supervisor (teacher) not found",
+        });
+      }
+      if (supervisor.schoolId !== existingClass.schoolId) {
+        return res.status(400).json({
+          success: false,
+          message: "Supervisor does not belong to the specified school",
+        });
+      }
+    }
+
+    // Check if class name already exists for this school (excluding current class)
+    if (String(name) !== existingClass.name) {
+      const existingClassName = await prisma.class.findFirst({
+        where: {
+          name: String(name),
+          schoolId: existingClass.schoolId,
+          id: { not: classId },
+        },
+      });
+      if (existingClassName) {
+        return res.status(409).json({
+          success: false,
+          message: `Class name "${name}" already exists for this school`,
+        });
+      }
+    }
+
+    // Update the class
+    const updatedClass = await prisma.class.update({
+      where: { id: classId },
+      data: {
+        name: String(name),
+        capacity: Number(capacity),
+        gradeId: Number(gradeId),
+        supervisorId: supervisorId ? Number(supervisorId) : null,
+      },
+      include: {
+        grade: {
+          select: {
+            id: true,
+            level: true,
+          },
+        },
+        supervisor: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+          },
+        },
+        _count: {
+          select: {
+            students: true,
+            lessons: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Class updated successfully",
+      data: updatedClass,
+    });
+  } catch (error) {
+    console.error("Error updating class:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update class",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+export const deleteClass = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Class ID is required",
+      });
+    }
+
+    const classId = parseInt(id, 10);
+    if (isNaN(classId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid class ID",
+      });
+    }
+
+    // Check if class exists
+    const classItem = await prisma.class.findUnique({
+      where: { id: classId },
+    });
+
+    if (!classItem) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found",
+      });
+    }
+
+    // Delete the class (cascade will handle related records)
+    await prisma.class.delete({
+      where: { id: classId },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Class deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting class:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete class",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
