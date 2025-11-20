@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import {
   TypedUseSelectorHook,
@@ -85,7 +85,7 @@ export default function StoreProvider({
     storeRef.current = makeStore();
     setupListeners(storeRef.current.dispatch);
   }
-  const persistor = persistStore(storeRef.current);
+  const persistor = useMemo(() => persistStore(storeRef.current), []);
 
   return (
     <Provider store={storeRef.current}>

@@ -1,11 +1,12 @@
-"use client";
+"use client"; 
 
 import { useGetStudentsQuery, useCreateStudentMutation, useUpdateStudentMutation, useDeleteStudentMutation } from "@/state/api";
 import Header from "@/app/(components)/Header";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { PlusCircleIcon, SearchIcon, Edit, Trash2 } from "lucide-react";
+import { PlusCircleIcon, SearchIcon, Edit, Trash2, Eye } from "lucide-react";
 import CreateStudentModal from "./CreateStudentModal";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -218,6 +219,13 @@ const Students = () => {
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/students/${student.id}?schoolId=${schoolId}`}
+                        className="p-1 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 cursor-pointer"
+                        title="View"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Link>
                       <button
                         onClick={() => handleEditStudent(student)}
                         className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"

@@ -35,8 +35,8 @@ export const getStudents = async (req: Request, res: Response) => {
     if (search) {
       whereClause.OR = [
         {
-          name: {
-            contains: search,
+            name: {
+                contains: search,
             mode: "insensitive" as const,
           },
         },
@@ -109,8 +109,191 @@ export const getStudents = async (req: Request, res: Response) => {
   }
 };
 
-export const createStudent = async (req: Request, res: Response) => {
+export const getStudentById = async (req: Request, res: Response) => {
   try {
+    const { id } = req.params;
+    const querySchoolId = (req.query && req.query.schoolId) ? String(req.query.schoolId) : null;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Student ID is required",
+      });
+    }
+
+    const studentId = parseInt(id, 10);
+    if (isNaN(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID",
+      });
+    }
+
+    if (!querySchoolId) {
+      return res.status(400).json({
+        success: false,
+        message: "schoolId is required as a query parameter. Example: /students/1?schoolId=1"
+      });
+    }
+
+    const schoolId = parseInt(querySchoolId, 10);
+    if (isNaN(schoolId)) {
+      return res.status(400).json({
+        success: false,
+        message: "schoolId must be a valid number.",
+      });
+    }
+
+    const student = await prisma.student.findFirst({
+      where: {
+        id: studentId,
+        schoolId: schoolId,
+      },
+      include: {
+        school: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        class: {
+          select: {
+            id: true,
+            name: true,
+            grade: {
+              select: {
+                id: true,
+                level: true,
+              },
+            },
+            _count: {
+              select: {
+                students: true,
+              },
+            },
+          },
+        },
+        grade: {
+          select: {
+            id: true,
+            level: true,
+          },
+        },
+        studentParents: {
+          select: {
+            relationship: true,
+            parent: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                surname: true,
+                email: true,
+                phone: true,
+                address: true,
+              },
+            },
+          },
+        },
+        attendances: {
+          select: {
+            id: true,
+            date: true,
+            present: true,
+            lesson: {
+              select: {
+                id: true,
+                name: true,
+                subject: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            date: "desc",
+          },
+          take: 10,
+        },
+        results: {
+          select: {
+            id: true,
+            score: true,
+            exam: {
+              select: {
+                id: true,
+                title: true,
+                lesson: {
+                  select: {
+                    id: true,
+                    name: true,
+                    subject: {
+                      select: {
+                        id: true,
+                        name: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            assignment: {
+              select: {
+                id: true,
+                title: true,
+                lesson: {
+                  select: {
+                    id: true,
+                    name: true,
+                    subject: {
+                      select: {
+                        id: true,
+                        name: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            id: "desc",
+          },
+          take: 10,
+        },
+        _count: {
+          select: {
+            attendances: true,
+            results: true,
+            studentParents: true,
+          },
+        },
+      },
+    });
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    res.status(200).json({ success: true, data: student });
+  } catch (error) {
+    console.error("Error fetching student:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve student.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+export const createStudent = async (req: Request, res: Response) => {
+    try {
     const {
       username,
       name,

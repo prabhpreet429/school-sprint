@@ -405,7 +405,7 @@ const CreateStudentModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditMode ? "Edit Student" : "Create Student"}</DialogTitle>
           <DialogDescription>
@@ -521,7 +521,7 @@ const CreateStudentModal = ({
                 }
               >
                 <SelectTrigger
-                  className={errors.sex ? "border-red-500" : "w-full"}
+                  className={errors.sex ? "border-red-500 w-full min-w-[200px]" : "w-full min-w-[200px]"}
                 >
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
@@ -545,7 +545,7 @@ const CreateStudentModal = ({
                 onValueChange={(value) => handleSelectChange("bloodType", value)}
               >
                 <SelectTrigger
-                  className={errors.bloodType ? "border-red-500" : "w-full"}
+                  className={errors.bloodType ? "border-red-500 w-full min-w-[200px]" : "w-full min-w-[200px]"}
                 >
                   <SelectValue placeholder="Select blood type" />
                 </SelectTrigger>
@@ -617,7 +617,7 @@ const CreateStudentModal = ({
                 onValueChange={(value) => handleSelectChange("gradeId", value)}
               >
                 <SelectTrigger
-                  className={errors.gradeId ? "border-red-500" : "w-full"}
+                  className={errors.gradeId ? "border-red-500 w-full min-w-[200px]" : "w-full min-w-[200px]"}
                 >
                   <SelectValue placeholder="Select grade" />
                 </SelectTrigger>
@@ -644,7 +644,7 @@ const CreateStudentModal = ({
                 onValueChange={(value) => handleSelectChange("classId", value)}
               >
                 <SelectTrigger
-                  className={errors.classId ? "border-red-500" : "w-full"}
+                  className={errors.classId ? "border-red-500 w-full min-w-[200px]" : "w-full min-w-[200px]"}
                 >
                   <SelectValue placeholder="Select class" />
                 </SelectTrigger>
@@ -711,8 +711,8 @@ const CreateStudentModal = ({
                         <SelectTrigger
                           className={
                             errors[`parents.${index}.relationship`]
-                              ? "border-red-500"
-                              : "w-full"
+                              ? "border-red-500 w-full min-w-[200px]"
+                              : "w-full min-w-[200px]"
                           }
                         >
                           <SelectValue placeholder="Select relationship" />

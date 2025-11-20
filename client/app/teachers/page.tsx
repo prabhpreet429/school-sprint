@@ -4,8 +4,9 @@ import { useGetTeachersQuery, useCreateTeacherMutation, useUpdateTeacherMutation
 import Header from "@/app/(components)/Header";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { PlusCircleIcon, SearchIcon, Edit, Trash2 } from "lucide-react";
+import { PlusCircleIcon, SearchIcon, Edit, Trash2, Eye } from "lucide-react";
 import CreateTeacherModal from "./CreateTeacherModal";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -147,7 +148,6 @@ const Teachers = () => {
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Gender</TableHead>
-              <TableHead>Blood Type</TableHead>
               <TableHead>Birthday</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -155,7 +155,7 @@ const Teachers = () => {
           <TableBody>
             {teachers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                   No teachers found
                 </TableCell>
               </TableRow>
@@ -185,7 +185,6 @@ const Teachers = () => {
                   <TableCell>{teacher.email || "N/A"}</TableCell>
                   <TableCell>{teacher.phone || "N/A"}</TableCell>
                   <TableCell>{teacher.sex === "MALE" ? "Male" : "Female"}</TableCell>
-                  <TableCell>{teacher.bloodType}</TableCell>
                   <TableCell>
                     {teacher.birthday
                       ? (() => {
@@ -208,6 +207,13 @@ const Teachers = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/teachers/${teacher.id}?schoolId=${schoolId}`}
+                        className="p-1 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 cursor-pointer"
+                        title="View"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Link>
                       <button
                         onClick={() => handleEditTeacher(teacher)}
                         className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"

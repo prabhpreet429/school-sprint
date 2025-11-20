@@ -217,7 +217,7 @@ const CreateLessonModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Update Lesson" : "Create New Lesson"}
@@ -257,7 +257,7 @@ const CreateLessonModal = ({
                 value={formData.day}
                 onValueChange={(value) => handleSelectChange("day", value)}
               >
-                <SelectTrigger className={errors.day ? "border-red-500" : ""}>
+                <SelectTrigger className={errors.day ? "border-red-500 min-w-[200px]" : "min-w-[200px]"}>
                   <SelectValue placeholder="Select day" />
                 </SelectTrigger>
                 <SelectContent>
@@ -316,7 +316,7 @@ const CreateLessonModal = ({
                 value={formData.subjectId === 0 ? "none" : String(formData.subjectId)}
                 onValueChange={(value) => handleSelectChange("subjectId", value)}
               >
-                <SelectTrigger className={errors.subjectId ? "border-red-500" : ""}>
+                <SelectTrigger className={errors.subjectId ? "border-red-500 min-w-[200px]" : "min-w-[200px]"}>
                   <SelectValue placeholder="Select subject" />
                 </SelectTrigger>
                 <SelectContent>
@@ -341,7 +341,7 @@ const CreateLessonModal = ({
                 value={formData.classId === 0 ? "none" : String(formData.classId)}
                 onValueChange={(value) => handleSelectChange("classId", value)}
               >
-                <SelectTrigger className={errors.classId ? "border-red-500" : ""}>
+                <SelectTrigger className={errors.classId ? "border-red-500 min-w-[200px]" : "min-w-[200px]"}>
                   <SelectValue placeholder="Select class" />
                 </SelectTrigger>
                 <SelectContent>
@@ -366,7 +366,7 @@ const CreateLessonModal = ({
                 value={formData.teacherId === 0 ? "none" : String(formData.teacherId)}
                 onValueChange={(value) => handleSelectChange("teacherId", value)}
               >
-                <SelectTrigger className={errors.teacherId ? "border-red-500" : ""}>
+                <SelectTrigger className={errors.teacherId ? "border-red-500 min-w-[200px]" : "min-w-[200px]"}>
                   <SelectValue placeholder="Select teacher" />
                 </SelectTrigger>
                 <SelectContent>

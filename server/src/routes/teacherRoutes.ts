@@ -1,10 +1,13 @@
 import { Router } from 'express';
-import { createTeacher, getTeachers, updateTeacher, deleteTeacher } from '../controllers/teacherController.ts';
+import { createTeacher, getTeachers, getTeacherById, updateTeacher, deleteTeacher } from '../controllers/teacherController.js';
 
 const router = Router();
 
 // Route to get all teachers with optional search
 router.get('/', getTeachers);
+
+// Route to get a single teacher by ID
+router.get('/:id', getTeacherById);
 
 // Route to create a new teacher
 router.post('/', createTeacher);

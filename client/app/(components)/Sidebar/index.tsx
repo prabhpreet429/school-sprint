@@ -14,6 +14,15 @@ import {
   School,
   Calendar,
   Megaphone,
+  Layers,
+  NotebookPen,
+  BookMarked,
+  ClipboardCheck,
+  Trophy,
+  CheckSquare,
+  FileText,
+  DollarSign,
+  Receipt,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -47,19 +56,19 @@ const SidebarLink = ({
     <Link href={hrefWithSchoolId}>
       <div
         className={`cursor-pointer flex items-center ${
-          isCollapsed ? "justify-center py-4" : "justify-start px-8 py-4"
+          isCollapsed ? "justify-center py-3" : "justify-start px-6 py-3"
         }
-        hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 gap-3 transition-colors ${
+        hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 gap-2 transition-colors ${
           isActive ? "bg-blue-200 dark:bg-blue-700 text-white" : ""
         }
       }`}
       >
-        <Icon className="w-6 h-6 !text-gray-700 dark:!text-gray-300" />
+        <Icon className="w-5 h-5 !text-gray-700 dark:!text-gray-300" />
 
         <span
           className={`${
             isCollapsed ? "hidden" : "block"
-          } font-medium text-gray-700 dark:text-gray-300`}
+          } font-medium text-sm text-gray-700 dark:text-gray-300`}
         >
           {label}
         </span>
@@ -79,15 +88,15 @@ const Sidebar = () => {
   };
 
   const sidebarClassNames = `fixed flex flex-col ${
-    isSidebarCollapsed ? "w-0 md:w-16" : "w-72 md:w-64"
+    isSidebarCollapsed ? "w-0 md:w-16" : "w-60 md:w-56"
   } bg-white dark:bg-gray-800 transition-all duration-300 overflow-hidden h-full shadow-md z-40`;
 
   return (
     <div className={sidebarClassNames}>
       {/* TOP LOGO */}
       <div
-        className={`flex gap-3 justify-between md:justify-normal items-center pt-8 ${
-          isSidebarCollapsed ? "px-5" : "px-8"
+        className={`flex gap-2 justify-between md:justify-normal items-center pt-6 ${
+          isSidebarCollapsed ? "px-4" : "px-6"
         }`}
       >
         Logo
@@ -101,7 +110,7 @@ const Sidebar = () => {
         <h1
           className={`${
             isSidebarCollapsed ? "hidden" : "block"
-          } font-extrabold text-2xl text-gray-900 dark:text-gray-100`}
+          } font-extrabold text-xl text-gray-900 dark:text-gray-100`}
         >
           EDSTOCK
         </h1>
@@ -115,7 +124,7 @@ const Sidebar = () => {
       </div>
 
       {/* LINKS */}
-      <div className="flex-grow mt-8">
+      <div className="flex-grow mt-6 overflow-y-auto">
         <SidebarLink
           href="/dashboard"
           icon={Layout}
@@ -148,14 +157,62 @@ const Sidebar = () => {
         />
         <SidebarLink
           href="/classes"
-          icon={BookOpen}
+          icon={Layers}
           label="Classes"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
           href="/lessons"
-          icon={BookOpen}
+          icon={NotebookPen}
           label="Lessons"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/subjects"
+          icon={BookMarked}
+          label="Subjects"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/assignments"
+          icon={FileText}
+          label="Assignments"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/exams"
+          icon={ClipboardCheck}
+          label="Exams"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/results"
+          icon={Trophy}
+          label="Results"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/attendances"
+          icon={CheckSquare}
+          label="Attendances"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/fees"
+          icon={DollarSign}
+          label="Fees"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/student-fees"
+          icon={Receipt}
+          label="Student Fees"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/payments"
+          icon={DollarSign}
+          label="Payments"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink

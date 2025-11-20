@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createClass, getClasses, updateClass, deleteClass } from '../controllers/classController.ts';
+import { createClass, getClasses, updateClass, deleteClass } from '../controllers/classController.js';
 
 const router = Router();
 

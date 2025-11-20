@@ -113,37 +113,38 @@ const Lessons = () => {
 
   return (
     <div className="p-4">
-      <Header name="Lessons" />
-      
-      {/* Search and Create */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="relative flex-1 max-w-md">
-          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="relative">
+          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
             placeholder="Search lessons..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
           />
         </div>
+      </div>
+
+      <div className="mb-6 flex justify-between items-center">
+        <Header name="Lessons" />
         <button
           onClick={() => {
             setEditingLesson(null);
             setIsModalOpen(true);
           }}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer"
         >
-          <PlusCircleIcon className="w-5 h-5" />
+          <PlusCircleIcon size={20} />
           Create Lesson
         </button>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="w-full bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="bg-gray-50 dark:bg-gray-900">
               <TableHead className="whitespace-nowrap">Name</TableHead>
               <TableHead className="whitespace-nowrap">Day</TableHead>
               <TableHead className="whitespace-nowrap">Start Time</TableHead>
@@ -157,14 +158,14 @@ const Lessons = () => {
           <TableBody>
             {lessons.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                   No lessons found
                 </TableCell>
               </TableRow>
             ) : (
               lessons.map((lesson: any) => (
-                <TableRow key={lesson.id}>
-                  <TableCell className="whitespace-nowrap">{lesson.name}</TableCell>
+                <TableRow key={lesson.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <TableCell className="whitespace-nowrap font-medium">{lesson.name}</TableCell>
                   <TableCell className="whitespace-nowrap">{lesson.day}</TableCell>
                   <TableCell className="whitespace-nowrap">
                     {format(new Date(lesson.startTime), "HH:mm")}

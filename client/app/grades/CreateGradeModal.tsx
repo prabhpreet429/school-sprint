@@ -107,7 +107,7 @@ const CreateGradeModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{isEditMode ? "Edit Grade" : "Create Grade"}</DialogTitle>
           <DialogDescription>

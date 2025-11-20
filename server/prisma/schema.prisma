@@ -32,6 +32,9 @@ model School {
   attendances   Attendance[]
   events        Event[]
   announcements Announcement[]
+  fees          Fee[]
+  studentFees   StudentFee[]
+  payments      Payment[]
 }
 
 model Admin {
@@ -64,6 +67,8 @@ model Student {
   studentParents StudentParent[]
   attendances Attendance[]
   results     Result[]
+  studentFees StudentFee[]
+  payments    Payment[]
   birthday    DateTime
 
   @@unique([username, schoolId])
@@ -133,6 +138,7 @@ model Grade {
 
   students Student[]
   classess Class[]
+  fees     Fee[]
 
   @@unique([level, schoolId])
 }
@@ -281,4 +287,93 @@ enum ParentRelationship {
   FATHER
   MOTHER
   GUARDIAN
+}
+
+enum FeeFrequency {
+  ONE_TIME
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  BANK_TRANSFER
+  CHEQUE
+  OTHER
+}
+
+enum FeeStatus {
+  PENDING
+  PAID
+  PARTIAL
+  OVERDUE
+  WAIVED
+}
+
+model Fee {
+  id        Int         @id @default(autoincrement())
+  name      String
+  amount    Float
+  frequency FeeFrequency
+  schoolId  Int
+  school    School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  gradeId   Int?
+  grade     Grade?      @relation(fields: [gradeId], references: [id])
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  studentFees StudentFee[]
+
+  @@unique([name, gradeId, schoolId])
+}
+
+model StudentFee {
+  id          Int       @id @default(autoincrement())
+  studentId   Int
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feeId       Int
+  fee         Fee       @relation(fields: [feeId], references: [id])
+  amount      Float
+  dueDate     DateTime
+  status      FeeStatus @default(PENDING)
+  paidAmount  Float     @default(0)
+  schoolId    Int
+  school      School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  academicYear String?  // e.g., "2024-2025"
+  term        String?   // e.g., "Fall", "Spring", "Summer"
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  feePayments FeePayment[]
+}
+
+model Payment {
+  id              Int           @id @default(autoincrement())
+  studentId       Int
+  student         Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  amount          Float
+  paymentDate     DateTime
+  paymentMethod   PaymentMethod
+  referenceNumber String?
+  notes           String?
+  schoolId        Int
+  school          School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdBy       Int?          // Admin/Teacher ID who recorded the payment
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  feePayments     FeePayment[]
+}
+
+model FeePayment {
+  id          Int        @id @default(autoincrement())
+  paymentId   Int
+  payment     Payment    @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  studentFeeId Int
+  studentFee  StudentFee @relation(fields: [studentFeeId], references: [id], onDelete: Cascade)
+  amount      Float      // Portion of payment allocated to this fee
+  createdAt   DateTime   @default(now())
+
+  @@unique([paymentId, studentFeeId])
 }

@@ -164,7 +164,7 @@ const CreateClassModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>{isEditMode ? "Edit Class" : "Create Class"}</DialogTitle>
           <DialogDescription>
@@ -202,7 +202,7 @@ const CreateClassModal = ({
                 onValueChange={(value) => handleSelectChange("gradeId", value)}
               >
                 <SelectTrigger
-                  className={errors.gradeId ? "border-red-500" : "w-full"}
+                  className={errors.gradeId ? "border-red-500 w-full min-w-[200px]" : "w-full min-w-[200px]"}
                 >
                   <SelectValue placeholder="Select grade" />
                 </SelectTrigger>
@@ -247,7 +247,7 @@ const CreateClassModal = ({
                 value={formData.supervisorId?.toString() || "none"}
                 onValueChange={(value) => handleSelectChange("supervisorId", value)}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full min-w-[200px]">
                   <SelectValue placeholder="Select supervisor (optional)" />
                 </SelectTrigger>
                 <SelectContent>

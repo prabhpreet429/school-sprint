@@ -7,6 +7,15 @@ CREATE TYPE "Day" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY
 -- CreateEnum
 CREATE TYPE "ParentRelationship" AS ENUM ('FATHER', 'MOTHER', 'GUARDIAN');
 
+-- CreateEnum
+CREATE TYPE "FeeFrequency" AS ENUM ('ONE_TIME', 'MONTHLY', 'QUARTERLY', 'YEARLY');
+
+-- CreateEnum
+CREATE TYPE "PaymentMethod" AS ENUM ('CASH', 'CARD', 'BANK_TRANSFER', 'CHEQUE', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "FeeStatus" AS ENUM ('PENDING', 'PAID', 'PARTIAL', 'OVERDUE', 'WAIVED');
+
 -- CreateTable
 CREATE TABLE "School" (
     "id" SERIAL NOT NULL,
@@ -216,6 +225,68 @@ CREATE TABLE "Announcement" (
 );
 
 -- CreateTable
+CREATE TABLE "Fee" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "frequency" "FeeFrequency" NOT NULL,
+    "schoolId" INTEGER NOT NULL,
+    "gradeId" INTEGER,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Fee_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "StudentFee" (
+    "id" SERIAL NOT NULL,
+    "studentId" INTEGER NOT NULL,
+    "feeId" INTEGER NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "dueDate" TIMESTAMP(3) NOT NULL,
+    "status" "FeeStatus" NOT NULL DEFAULT 'PENDING',
+    "paidAmount" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "schoolId" INTEGER NOT NULL,
+    "academicYear" TEXT,
+    "term" TEXT,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "StudentFee_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Payment" (
+    "id" SERIAL NOT NULL,
+    "studentId" INTEGER NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "paymentDate" TIMESTAMP(3) NOT NULL,
+    "paymentMethod" "PaymentMethod" NOT NULL,
+    "referenceNumber" TEXT,
+    "notes" TEXT,
+    "schoolId" INTEGER NOT NULL,
+    "createdBy" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "FeePayment" (
+    "id" SERIAL NOT NULL,
+    "paymentId" INTEGER NOT NULL,
+    "studentFeeId" INTEGER NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "FeePayment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_SubjectToTeacher" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL,
@@ -264,6 +335,12 @@ CREATE UNIQUE INDEX "Class_name_schoolId_key" ON "Class"("name", "schoolId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Subject_name_schoolId_key" ON "Subject"("name", "schoolId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Fee_name_gradeId_schoolId_key" ON "Fee"("name", "gradeId", "schoolId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "FeePayment_paymentId_studentFeeId_key" ON "FeePayment"("paymentId", "studentFeeId");
 
 -- CreateIndex
 CREATE INDEX "_SubjectToTeacher_B_index" ON "_SubjectToTeacher"("B");
@@ -363,6 +440,33 @@ ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_schoolId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_classId_fkey" FOREIGN KEY ("classId") REFERENCES "Class"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Fee" ADD CONSTRAINT "Fee_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Fee" ADD CONSTRAINT "Fee_gradeId_fkey" FOREIGN KEY ("gradeId") REFERENCES "Grade"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StudentFee" ADD CONSTRAINT "StudentFee_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StudentFee" ADD CONSTRAINT "StudentFee_feeId_fkey" FOREIGN KEY ("feeId") REFERENCES "Fee"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StudentFee" ADD CONSTRAINT "StudentFee_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "FeePayment" ADD CONSTRAINT "FeePayment_paymentId_fkey" FOREIGN KEY ("paymentId") REFERENCES "Payment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "FeePayment" ADD CONSTRAINT "FeePayment_studentFeeId_fkey" FOREIGN KEY ("studentFeeId") REFERENCES "StudentFee"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_SubjectToTeacher" ADD CONSTRAINT "_SubjectToTeacher_A_fkey" FOREIGN KEY ("A") REFERENCES "Subject"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -86,17 +86,74 @@ export interface Student {
     relationship: "FATHER" | "MOTHER" | "GUARDIAN";
     parent: {
       id: number;
+      username: string;
       name: string;
       surname: string;
+      email: string | null;
+      phone: string | null;
+      address: string;
     };
   }[];
   class?: {
     id: number;
     name: string;
+    grade?: {
+      id: number;
+      level: number;
+    };
+    _count?: {
+      students: number;
+    };
   };
   grade?: {
     id: number;
     level: number;
+  };
+  attendances?: {
+    id: number;
+    date: string;
+    present: boolean;
+    lesson?: {
+      id: number;
+      name: string;
+      subject?: {
+        id: number;
+        name: string;
+      };
+    };
+  }[];
+  results?: {
+    id: number;
+    score: number;
+    exam?: {
+      id: number;
+      title: string;
+      lesson?: {
+        id: number;
+        name: string;
+        subject?: {
+          id: number;
+          name: string;
+        };
+      };
+    };
+    assignment?: {
+      id: number;
+      title: string;
+      lesson?: {
+        id: number;
+        name: string;
+        subject?: {
+          id: number;
+          name: string;
+        };
+      };
+    };
+  }[];
+  _count?: {
+    attendances: number;
+    results: number;
+    studentParents: number;
   };
 }
 
@@ -117,6 +174,41 @@ export interface Teacher {
   school?: {
     id: number;
     name: string;
+  };
+  subjects?: {
+    id: number;
+    name: string;
+  }[];
+  classes?: {
+    id: number;
+    name: string;
+    grade?: {
+      id: number;
+      level: number;
+    };
+    _count?: {
+      students: number;
+    };
+  }[];
+  lessons?: {
+    id: number;
+    name: string;
+    day: string;
+    startTime: string;
+    endTime: string;
+    subject?: {
+      id: number;
+      name: string;
+    };
+    class?: {
+      id: number;
+      name: string;
+    };
+  }[];
+  _count?: {
+    lessons: number;
+    classes: number;
+    subjects: number;
   };
 }
 
@@ -207,6 +299,11 @@ export interface Subject {
   id: number;
   name: string;
   schoolId: number;
+  teachers?: {
+    id: number;
+    name: string;
+    surname: string;
+  }[];
   _count?: {
     teachers: number;
     lessons: number;
@@ -247,6 +344,221 @@ export interface Lesson {
   };
 }
 
+export interface Exam {
+  id: number;
+  title: string;
+  startTime: string;
+  endTime: string;
+  schoolId: number;
+  lessonId: number;
+  lesson?: {
+    id: number;
+    name: string;
+    subject?: {
+      id: number;
+      name: string;
+    };
+    class?: {
+      id: number;
+      name: string;
+    };
+  };
+  _count?: {
+    results: number;
+  };
+}
+
+export interface Attendance {
+  id: number;
+  date: string;
+  present: boolean;
+  schoolId: number;
+  studentId: number;
+  lessonId: number;
+  student?: {
+    id: number;
+    name: string;
+    surname: string;
+    username: string;
+    class?: {
+      id: number;
+      name: string;
+    };
+  };
+  lesson?: {
+    id: number;
+    name: string;
+    subject?: {
+      id: number;
+      name: string;
+    };
+    class?: {
+      id: number;
+      name: string;
+    };
+  };
+}
+
+export interface Assignment {
+  id: number;
+  title: string;
+  startDate: string;
+  dueDate: string;
+  schoolId: number;
+  lessonId: number;
+  lesson?: {
+    id: number;
+    name: string;
+    subject?: {
+      id: number;
+      name: string;
+    };
+    class?: {
+      id: number;
+      name: string;
+    };
+    teacher?: {
+      id: number;
+      name: string;
+      surname: string;
+    };
+  };
+  _count?: {
+    results: number;
+  };
+}
+
+export interface Fee {
+  id: number;
+  name: string;
+  amount: number;
+  frequency: "ONE_TIME" | "MONTHLY" | "QUARTERLY" | "YEARLY";
+  schoolId: number;
+  gradeId: number | null;
+  grade?: {
+    id: number;
+    level: number;
+  };
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    studentFees: number;
+  };
+}
+
+export interface StudentFee {
+  id: number;
+  studentId: number;
+  feeId: number;
+  amount: number;
+  dueDate: string;
+  status: "PENDING" | "PAID" | "PARTIAL" | "OVERDUE" | "WAIVED";
+  paidAmount: number;
+  schoolId: number;
+  academicYear: string | null;
+  term: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  student?: {
+    id: number;
+    name: string;
+    surname: string;
+    username: string;
+    class?: {
+      id: number;
+      name: string;
+    };
+    grade?: {
+      id: number;
+      level: number;
+    };
+  };
+  fee?: {
+    id: number;
+    name: string;
+    frequency: string;
+  };
+}
+
+export interface Payment {
+  id: number;
+  studentId: number;
+  amount: number;
+  paymentDate: string;
+  paymentMethod: "CASH" | "CARD" | "BANK_TRANSFER" | "CHEQUE" | "OTHER";
+  referenceNumber: string | null;
+  notes: string | null;
+  schoolId: number;
+  createdBy: number | null;
+  createdAt: string;
+  updatedAt: string;
+  student?: {
+    id: number;
+    name: string;
+    surname: string;
+    username: string;
+    class?: {
+      id: number;
+      name: string;
+    };
+  };
+  feePayments?: {
+    id: number;
+    amount: number;
+    studentFee: {
+      id: number;
+      fee: {
+        id: number;
+        name: string;
+      };
+    };
+  }[];
+}
+
+export interface Result {
+  id: number;
+  score: number;
+  schoolId: number;
+  studentId: number;
+  examId: number | null;
+  assignmentId: number | null;
+  student?: {
+    id: number;
+    name: string;
+    surname: string;
+    class?: {
+      id: number;
+      name: string;
+    };
+  };
+  exam?: {
+    id: number;
+    title: string;
+    lesson?: {
+      id: number;
+      name: string;
+      subject?: {
+        id: number;
+        name: string;
+      };
+    };
+  } | null;
+  assignment?: {
+    id: number;
+    title: string;
+    lesson?: {
+      id: number;
+      name: string;
+      subject?: {
+        id: number;
+        name: string;
+      };
+    };
+  } | null;
+}
+
 export interface DashboardData {
   schoolDetails: SchoolDetails | null;
   counts: {
@@ -277,7 +589,7 @@ export const api = createApi({
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
   }),
   reducerPath: "api",
-  tagTypes: ["DashboardData", "Students", "Teachers", "Parents", "Grades", "Classes", "Events", "Announcements", "Lessons", "Subjects"],
+  tagTypes: ["DashboardData", "Students", "Teachers", "Parents", "Grades", "Classes", "Events", "Announcements", "Lessons", "Subjects", "Exams", "Results", "Attendances", "Assignments", "Fees", "StudentFees", "Payments"],
   endpoints: (build) => ({
     // Get dashboard data by schoolId
     getDashboardData: build.query<DashboardResponse, number>({
@@ -290,6 +602,15 @@ export const api = createApi({
         params: {
           schoolId,
           ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Students"],
+    }),
+    getStudentById: build.query<{ success: boolean; data: Student }, { id: number; schoolId: number }>({
+      query: ({ id, schoolId }) => ({
+        url: `/students/${id}`,
+        params: {
+          schoolId,
         },
       }),
       providesTags: ["Students"],
@@ -323,6 +644,15 @@ export const api = createApi({
         params: {
           schoolId,
           ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Teachers"],
+    }),
+    getTeacherById: build.query<{ success: boolean; data: Teacher }, { id: number; schoolId: number }>({
+      query: ({ id, schoolId }) => ({
+        url: `/teachers/${id}`,
+        params: {
+          schoolId,
         },
       }),
       providesTags: ["Teachers"],
@@ -557,16 +887,274 @@ export const api = createApi({
       }),
       invalidatesTags: ["Lessons"],
     }),
+    createSubject: build.mutation<{ success: boolean; data: Subject }, Partial<Subject>>({
+      query: (newSubject) => ({
+        url: '/subjects',
+        method: 'POST',
+        body: newSubject,
+      }),
+      invalidatesTags: ["Subjects"],
+    }),
+    updateSubject: build.mutation<{ success: boolean; data: Subject }, { id: number; data: Partial<Subject> }>({
+      query: ({ id, data }) => ({
+        url: `/subjects/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Subjects"],
+    }),
+    deleteSubject: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/subjects/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Subjects"],
+    }),
+    getExams: build.query<{ success: boolean; data: Exam[] }, { schoolId: number; search?: string }>({
+      query: ({ schoolId, search }) => ({
+        url: '/exams',
+        params: {
+          schoolId,
+          ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Exams"],
+    }),
+    createExam: build.mutation<{ success: boolean; data: Exam }, Partial<Exam>>({
+      query: (newExam) => ({
+        url: '/exams',
+        method: 'POST',
+        body: newExam,
+      }),
+      invalidatesTags: ["Exams"],
+    }),
+    updateExam: build.mutation<{ success: boolean; data: Exam }, { id: number; data: Partial<Exam> }>({
+      query: ({ id, data }) => ({
+        url: `/exams/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Exams"],
+    }),
+    deleteExam: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/exams/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Exams"],
+    }),
+    getResults: build.query<{ success: boolean; data: Result[] }, { schoolId: number; search?: string }>({
+      query: ({ schoolId, search }) => ({
+        url: '/results',
+        params: {
+          schoolId,
+          ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Results"],
+    }),
+    createResult: build.mutation<{ success: boolean; data: Result }, Partial<Result>>({
+      query: (newResult) => ({
+        url: '/results',
+        method: 'POST',
+        body: newResult,
+      }),
+      invalidatesTags: ["Results"],
+    }),
+    updateResult: build.mutation<{ success: boolean; data: Result }, { id: number; data: Partial<Result> }>({
+      query: ({ id, data }) => ({
+        url: `/results/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Results"],
+    }),
+    deleteResult: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/results/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Results"],
+    }),
+    getAttendances: build.query<{ success: boolean; data: Attendance[] }, { schoolId: number; search?: string }>({
+      query: ({ schoolId, search }) => ({
+        url: '/attendances',
+        params: {
+          schoolId,
+          ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Attendances"],
+    }),
+    createAttendance: build.mutation<{ success: boolean; data: Attendance }, Partial<Attendance>>({
+      query: (newAttendance) => ({
+        url: '/attendances',
+        method: 'POST',
+        body: newAttendance,
+      }),
+      invalidatesTags: ["Attendances"],
+    }),
+    updateAttendance: build.mutation<{ success: boolean; data: Attendance }, { id: number; data: Partial<Attendance> }>({
+      query: ({ id, data }) => ({
+        url: `/attendances/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Attendances"],
+    }),
+    deleteAttendance: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/attendances/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Attendances"],
+    }),
+    getAssignments: build.query<{ success: boolean; data: Assignment[] }, { schoolId: number; search?: string }>({
+      query: ({ schoolId, search }) => ({
+        url: '/assignments',
+        params: {
+          schoolId,
+          ...(search ? { search } : {}),
+        },
+      }),
+      providesTags: ["Assignments"],
+    }),
+    createAssignment: build.mutation<{ success: boolean; data: Assignment }, Partial<Assignment>>({
+      query: (newAssignment) => ({
+        url: '/assignments',
+        method: 'POST',
+        body: newAssignment,
+      }),
+      invalidatesTags: ["Assignments"],
+    }),
+    updateAssignment: build.mutation<{ success: boolean; data: Assignment }, { id: number; data: Partial<Assignment> }>({
+      query: ({ id, data }) => ({
+        url: `/assignments/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Assignments"],
+    }),
+    deleteAssignment: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/assignments/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Assignments"],
+    }),
+    // Fees
+    getFees: build.query<{ success: boolean; data: Fee[] }, { schoolId: number }>({
+      query: ({ schoolId }) => ({
+        url: '/fees',
+        params: { schoolId },
+      }),
+      providesTags: ["Fees"],
+    }),
+    createFee: build.mutation<{ success: boolean; data: Fee }, Partial<Fee>>({
+      query: (newFee) => ({
+        url: '/fees',
+        method: 'POST',
+        body: newFee,
+      }),
+      invalidatesTags: ["Fees"],
+    }),
+    updateFee: build.mutation<{ success: boolean; data: Fee }, { id: number; data: Partial<Fee> }>({
+      query: ({ id, data }) => ({
+        url: `/fees/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Fees"],
+    }),
+    deleteFee: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/fees/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Fees"],
+    }),
+    // Student Fees
+    getStudentFees: build.query<{ success: boolean; data: StudentFee[] }, { schoolId: number; studentId?: number }>({
+      query: ({ schoolId, studentId }) => ({
+        url: '/student-fees',
+        params: { schoolId, ...(studentId && { studentId }) },
+      }),
+      providesTags: ["StudentFees"],
+    }),
+    createStudentFee: build.mutation<{ success: boolean; data: StudentFee }, Partial<StudentFee>>({
+      query: (newStudentFee) => ({
+        url: '/student-fees',
+        method: 'POST',
+        body: newStudentFee,
+      }),
+      invalidatesTags: ["StudentFees"],
+    }),
+    assignFeesByGrade: build.mutation<{ success: boolean; message: string; data: any }, { gradeId: number; schoolId: number; dueDate: string; academicYear?: string; term?: string }>({
+      query: (data) => ({
+        url: '/student-fees/assign-by-grade',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ["StudentFees"],
+    }),
+    updateStudentFee: build.mutation<{ success: boolean; data: StudentFee }, { id: number; data: Partial<StudentFee> }>({
+      query: ({ id, data }) => ({
+        url: `/student-fees/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["StudentFees"],
+    }),
+    deleteStudentFee: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/student-fees/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["StudentFees"],
+    }),
+    // Payments
+    getPayments: build.query<{ success: boolean; data: Payment[] }, { schoolId: number; studentId?: number }>({
+      query: ({ schoolId, studentId }) => ({
+        url: '/payments',
+        params: { schoolId, ...(studentId && { studentId }) },
+      }),
+      providesTags: ["Payments"],
+    }),
+    createPayment: build.mutation<{ success: boolean; data: Payment }, Partial<Payment> & { feeAllocations?: Array<{ studentFeeId: number; amount: number }> }>({
+      query: (newPayment) => ({
+        url: '/payments',
+        method: 'POST',
+        body: newPayment,
+      }),
+      invalidatesTags: ["Payments", "StudentFees"],
+    }),
+    updatePayment: build.mutation<{ success: boolean; data: Payment }, { id: number; data: Partial<Payment> }>({
+      query: ({ id, data }) => ({
+        url: `/payments/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ["Payments"],
+    }),
+    deletePayment: build.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/payments/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ["Payments", "StudentFees"],
+    }),
   }),
 });
 
 export const {
   useGetDashboardDataQuery,
   useGetStudentsQuery,
+  useGetStudentByIdQuery,
   useCreateStudentMutation,
   useUpdateStudentMutation,
   useDeleteStudentMutation,
   useGetTeachersQuery,
+  useGetTeacherByIdQuery,
   useCreateTeacherMutation,
   useUpdateTeacherMutation,
   useDeleteTeacherMutation,
@@ -591,8 +1179,40 @@ export const {
   useUpdateAnnouncementMutation,
   useDeleteAnnouncementMutation,
   useGetSubjectsQuery,
+  useCreateSubjectMutation,
+  useUpdateSubjectMutation,
+  useDeleteSubjectMutation,
   useGetLessonsQuery,
   useCreateLessonMutation,
   useUpdateLessonMutation,
-  useDeleteLessonMutation
+  useDeleteLessonMutation,
+  useGetExamsQuery,
+  useCreateExamMutation,
+  useUpdateExamMutation,
+  useDeleteExamMutation,
+  useGetResultsQuery,
+  useCreateResultMutation,
+  useUpdateResultMutation,
+  useDeleteResultMutation,
+  useGetAttendancesQuery,
+  useCreateAttendanceMutation,
+  useUpdateAttendanceMutation,
+  useDeleteAttendanceMutation,
+  useGetAssignmentsQuery,
+  useCreateAssignmentMutation,
+  useUpdateAssignmentMutation,
+  useDeleteAssignmentMutation,
+  useGetFeesQuery,
+  useCreateFeeMutation,
+  useUpdateFeeMutation,
+  useDeleteFeeMutation,
+  useGetStudentFeesQuery,
+  useCreateStudentFeeMutation,
+  useAssignFeesByGradeMutation,
+  useUpdateStudentFeeMutation,
+  useDeleteStudentFeeMutation,
+  useGetPaymentsQuery,
+  useCreatePaymentMutation,
+  useUpdatePaymentMutation,
+  useDeletePaymentMutation,
 } = api;

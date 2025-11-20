@@ -18,6 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useGetSubjectsQuery } from "@/state/api";
+import { X } from "lucide-react";
 
 type TeacherFormData = {
   username: string;
@@ -31,6 +33,7 @@ type TeacherFormData = {
   email?: string;
   phone?: string;
   img?: string;
+  subjectIds?: number[];
 };
 
 interface CreateTeacherModalProps {
@@ -51,6 +54,10 @@ const CreateTeacherModal = ({
   schoolId,
 }: CreateTeacherModalProps) => {
   const isEditMode = !!initialData;
+  const { data: subjectsData } = useGetSubjectsQuery({ schoolId, search: "" });
+  const subjects = subjectsData?.data || [];
+  const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
+
   const [formData, setFormData] = useState<TeacherFormData>({
     username: "",
     name: "",
@@ -63,6 +70,7 @@ const CreateTeacherModal = ({
     email: "",
     phone: "",
     img: "",
+    subjectIds: [],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -107,6 +115,7 @@ const CreateTeacherModal = ({
         email: initialData.email || "",
         phone: initialData.phone || "",
         img: initialData.img || "",
+        subjectIds: initialData.subjects?.map((s: any) => s.id) || [],
       });
     } else if (isOpen && !initialData) {
       // Reset form for create mode
@@ -122,6 +131,7 @@ const CreateTeacherModal = ({
         email: "",
         phone: "",
         img: "",
+        subjectIds: [],
       });
       setErrors({});
     }
@@ -217,6 +227,7 @@ const CreateTeacherModal = ({
           email: "",
           phone: "",
           img: "",
+          subjectIds: [],
         });
       }
       setErrors({});
@@ -228,7 +239,7 @@ const CreateTeacherModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditMode ? "Edit Teacher" : "Create Teacher"}</DialogTitle>
           <DialogDescription>
@@ -344,7 +355,7 @@ const CreateTeacherModal = ({
                 }
               >
                 <SelectTrigger
-                  className={errors.sex ? "border-red-500" : "w-full"}
+                  className={errors.sex ? "border-red-500 w-full min-w-[200px]" : "w-full min-w-[200px]"}
                 >
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
@@ -368,7 +379,7 @@ const CreateTeacherModal = ({
                 onValueChange={(value) => handleSelectChange("bloodType", value)}
               >
                 <SelectTrigger
-                  className={errors.bloodType ? "border-red-500" : "w-full"}
+                  className={errors.bloodType ? "border-red-500 w-full min-w-[200px]" : "w-full min-w-[200px]"}
                 >
                   <SelectValue placeholder="Select blood type" />
                 </SelectTrigger>
@@ -426,6 +437,74 @@ const CreateTeacherModal = ({
                       e.currentTarget.style.display = "none";
                     }}
                   />
+                </div>
+              )}
+            </div>
+
+            {/* Subjects Multi-Select */}
+            <div className="col-span-2">
+              <label className="block text-sm font-medium mb-1">
+                Subjects
+              </label>
+              <div className="relative">
+                <Select
+                  open={isSubjectDropdownOpen}
+                  onOpenChange={setIsSubjectDropdownOpen}
+                  onValueChange={(value) => {
+                    const subjectId = Number(value);
+                    if (!formData.subjectIds?.includes(subjectId)) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        subjectIds: [...(prev.subjectIds || []), subjectId],
+                      }));
+                    }
+                    setIsSubjectDropdownOpen(false);
+                  }}
+                >
+                  <SelectTrigger className="w-full min-w-[200px]">
+                    <SelectValue placeholder="Select subjects to assign" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjects
+                      .filter((subject: any) => !formData.subjectIds?.includes(subject.id))
+                      .map((subject: any) => (
+                        <SelectItem key={subject.id} value={String(subject.id)}>
+                          {subject.name}
+                        </SelectItem>
+                      ))}
+                    {subjects.filter((subject: any) => !formData.subjectIds?.includes(subject.id)).length === 0 && (
+                      <div className="px-2 py-1.5 text-sm text-gray-500">All subjects selected</div>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Selected Subjects as Chips */}
+              {formData.subjectIds && formData.subjectIds.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {formData.subjectIds.map((subjectId) => {
+                    const subject = subjects.find((s: any) => s.id === subjectId);
+                    return (
+                      <div
+                        key={subjectId}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm"
+                      >
+                        <span>{subject?.name || `Subject ${subjectId}`}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              subjectIds: prev.subjectIds?.filter((id) => id !== subjectId) || [],
+                            }));
+                          }}
+                          className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

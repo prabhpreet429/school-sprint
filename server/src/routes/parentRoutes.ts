@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createParent, getParents, updateParent, deleteParent } from '../controllers/parentController.ts';
+import { createParent, getParents, updateParent, deleteParent } from '../controllers/parentController.js';
 
 const router = Router();
 

@@ -181,7 +181,7 @@ const CreateAnnouncementModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditMode ? "Edit Announcement" : "Create Announcement"}</DialogTitle>
           <DialogDescription>
@@ -257,7 +257,7 @@ const CreateAnnouncementModal = ({
                   value={formData.classId ? formData.classId.toString() : "none"}
                   onValueChange={(value) => handleSelectChange("classId", value)}
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full min-w-[200px]">
                     <SelectValue placeholder="Select class (optional)" />
                   </SelectTrigger>
                   <SelectContent>

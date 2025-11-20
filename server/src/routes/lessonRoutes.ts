@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createLesson, getLessons, updateLesson, deleteLesson } from '../controllers/lessonController';
+import { createLesson, getLessons, updateLesson, deleteLesson } from '../controllers/lessonController.js';
 
 const router = Router();
 

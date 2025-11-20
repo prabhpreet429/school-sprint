@@ -64,6 +64,12 @@ export const getTeachers = async (req: Request, res: Response) => {
             name: true,
           },
         },
+        subjects: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -76,6 +82,125 @@ export const getTeachers = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: "Failed to retrieve teachers.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+export const getTeacherById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const querySchoolId = (req.query && req.query.schoolId) ? String(req.query.schoolId) : null;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Teacher ID is required",
+      });
+    }
+
+    const teacherId = parseInt(id, 10);
+    if (isNaN(teacherId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid teacher ID",
+      });
+    }
+
+    if (!querySchoolId) {
+      return res.status(400).json({
+        success: false,
+        message: "schoolId is required as a query parameter. Example: /teachers/1?schoolId=1"
+      });
+    }
+
+    const schoolId = parseInt(querySchoolId, 10);
+    if (isNaN(schoolId)) {
+      return res.status(400).json({
+        success: false,
+        message: "schoolId must be a valid number.",
+      });
+    }
+
+    const teacher = await prisma.teacher.findFirst({
+      where: {
+        id: teacherId,
+        schoolId: schoolId,
+      },
+      include: {
+        school: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        subjects: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        classes: {
+          select: {
+            id: true,
+            name: true,
+            grade: {
+              select: {
+                id: true,
+                level: true,
+              },
+            },
+            _count: {
+              select: {
+                students: true,
+              },
+            },
+          },
+        },
+        lessons: {
+          select: {
+            id: true,
+            name: true,
+            day: true,
+            startTime: true,
+            endTime: true,
+            subject: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            class: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            lessons: true,
+            classes: true,
+            subjects: true,
+          },
+        },
+      },
+    });
+
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher not found",
+      });
+    }
+
+    res.status(200).json({ success: true, data: teacher });
+  } catch (error) {
+    console.error("Error fetching teacher:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve teacher.",
       error: error instanceof Error ? error.message : "Unknown error",
     });
   }
@@ -95,6 +220,7 @@ export const createTeacher = async (req: Request, res: Response) => {
       email,
       phone,
       img,
+      subjectIds,
     } = req.body;
 
     // Validate required fields
@@ -209,6 +335,26 @@ export const createTeacher = async (req: Request, res: Response) => {
       }
     }
 
+    // Validate subjectIds if provided
+    if (subjectIds && Array.isArray(subjectIds) && subjectIds.length > 0) {
+      const subjectIdsNumbers = subjectIds.map((id: any) => Number(id)).filter((id: number) => !isNaN(id));
+      if (subjectIdsNumbers.length > 0) {
+        // Verify all subjects exist and belong to the school
+        const subjects = await prisma.subject.findMany({
+          where: {
+            id: { in: subjectIdsNumbers },
+            schoolId: Number(schoolId),
+          },
+        });
+        if (subjects.length !== subjectIdsNumbers.length) {
+          return res.status(400).json({
+            success: false,
+            message: "One or more subjects not found or do not belong to this school",
+          });
+        }
+      }
+    }
+
     // Create the teacher
     const teacher = await prisma.teacher.create({
       data: {
@@ -223,9 +369,20 @@ export const createTeacher = async (req: Request, res: Response) => {
         email: email || null,
         phone: phone || null,
         img: img || null,
+        subjects: subjectIds && Array.isArray(subjectIds) && subjectIds.length > 0
+          ? {
+              connect: subjectIds.map((id: any) => ({ id: Number(id) })),
+            }
+          : undefined,
       },
       include: {
         school: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        subjects: {
           select: {
             id: true,
             name: true,
@@ -263,6 +420,7 @@ export const updateTeacher = async (req: Request, res: Response) => {
       email,
       phone,
       img,
+      subjectIds,
     } = req.body;
 
     if (!id) {
@@ -374,6 +532,34 @@ export const updateTeacher = async (req: Request, res: Response) => {
       }
     }
 
+    // Validate subjectIds if provided
+    if (subjectIds && Array.isArray(subjectIds) && subjectIds.length > 0) {
+      const subjectIdsNumbers = subjectIds.map((id: any) => Number(id)).filter((id: number) => !isNaN(id));
+      if (subjectIdsNumbers.length > 0) {
+        // Verify all subjects exist and belong to the school
+        const subjects = await prisma.subject.findMany({
+          where: {
+            id: { in: subjectIdsNumbers },
+            schoolId: existingTeacher.schoolId,
+          },
+        });
+        if (subjects.length !== subjectIdsNumbers.length) {
+          return res.status(400).json({
+            success: false,
+            message: "One or more subjects not found or do not belong to this school",
+          });
+        }
+      }
+    }
+
+    // Parse birthday as local date to avoid timezone issues
+    const birthdayDate = birthday.match(/^\d{4}-\d{2}-\d{2}$/) 
+      ? (() => {
+          const [year, month, day] = birthday.split('-').map(Number);
+          return new Date(year, month - 1, day);
+        })()
+      : new Date(birthday);
+
     // Update the teacher
     const updatedTeacher = await prisma.teacher.update({
       where: { id: teacherId },
@@ -383,14 +569,27 @@ export const updateTeacher = async (req: Request, res: Response) => {
         surname,
         address,
         bloodType,
-        sex,
-        birthday: new Date(birthday),
+        sex: sex as UserSex,
+        birthday: birthdayDate,
         email: email || null,
         phone: phone || null,
         img: img || null,
+        subjects: subjectIds && Array.isArray(subjectIds)
+          ? {
+              set: subjectIds.length > 0
+                ? subjectIds.map((id: any) => ({ id: Number(id) }))
+                : [],
+            }
+          : undefined,
       },
       include: {
         school: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        subjects: {
           select: {
             id: true,
             name: true,
