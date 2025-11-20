@@ -56,6 +56,10 @@ export const getDashboardData = async (req: Request, res: Response) => {
       })
     ]);
 
+    // Get current month start and end dates for fees calculations
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const currentYearStart = new Date(now.getFullYear(), 0, 1);
+
     // Fetch all data in parallel for better performance
     const [
       upcomingEvents,
@@ -63,7 +67,8 @@ export const getDashboardData = async (req: Request, res: Response) => {
       studentsCount,
       teachersCount,
       schoolDetails,
-      attendanceData
+      attendanceData,
+      feesData
     ] = await Promise.all([
       // Get upcoming events (events with startTime >= now)
       prisma.event.findMany({
@@ -165,7 +170,64 @@ export const getDashboardData = async (req: Request, res: Response) => {
           date: 'desc'
         },
         take: 50 // Limit to 50 recent attendance records
-      })
+      }),
+
+      // Get fees and payments data
+      Promise.all([
+        // Total fees due (all student fees)
+        prisma.studentFee.aggregate({
+          where: { schoolId },
+          _sum: { amount: true },
+        }),
+        // Total fees paid
+        prisma.studentFee.aggregate({
+          where: { schoolId },
+          _sum: { paidAmount: true },
+        }),
+        // Total payments this month
+        prisma.payment.aggregate({
+          where: {
+            schoolId,
+            paymentDate: { gte: currentMonthStart },
+          },
+          _sum: { amount: true },
+        }),
+        // Total payments this year
+        prisma.payment.aggregate({
+          where: {
+            schoolId,
+            paymentDate: { gte: currentYearStart },
+          },
+          _sum: { amount: true },
+        }),
+        // Count of overdue fees
+        prisma.studentFee.count({
+          where: {
+            schoolId,
+            status: "OVERDUE",
+          },
+        }),
+        // Count of pending fees
+        prisma.studentFee.count({
+          where: {
+            schoolId,
+            status: "PENDING",
+          },
+        }),
+        // Monthly payments for last 6 months
+        prisma.payment.findMany({
+          where: {
+            schoolId,
+            paymentDate: {
+              gte: new Date(now.getFullYear(), now.getMonth() - 5, 1), // Last 6 months
+            },
+          },
+          select: {
+            amount: true,
+            paymentDate: true,
+          },
+        }),
+      ])
     ]);
 
     // Calculate attendance statistics
@@ -203,6 +265,36 @@ export const getDashboardData = async (req: Request, res: Response) => {
     let holidays: Array<{ date: Date; name: string }> = [];
     if (schoolDetails?.country) {
       holidays = getHolidaysForCountry(schoolDetails.country);
+    }
+
+    // Calculate fees statistics
+    const totalFeesDue = feesData[0]._sum.amount || 0;
+    const totalFeesPaid = feesData[1]._sum.paidAmount || 0;
+    const totalPending = totalFeesDue - totalFeesPaid;
+    const collectionRate = totalFeesDue > 0 ? (totalFeesPaid / totalFeesDue) * 100 : 0;
+    const paymentsThisMonth = feesData[2]._sum.amount || 0;
+    const paymentsThisYear = feesData[3]._sum.amount || 0;
+    const overdueCount = feesData[4];
+    const pendingCount = feesData[5];
+    const monthlyPayments = feesData[6] || [];
+
+    // Calculate monthly collection data for last 6 months
+    const monthlyCollection: { month: string; amount: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const nextMonthDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+      
+      const monthTotal = monthlyPayments
+        .filter((payment: any) => {
+          const paymentDate = new Date(payment.paymentDate);
+          return paymentDate >= monthDate && paymentDate < nextMonthDate;
+        })
+        .reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0);
+      
+      monthlyCollection.push({
+        month: monthDate.toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+        amount: monthTotal
+      });
     }
 
     // Format the response
@@ -254,6 +346,17 @@ export const getDashboardData = async (req: Request, res: Response) => {
           attendanceRate: Math.round(attendanceRate * 100) / 100 // Round to 2 decimal places
         },
         monthlyAverages: monthlyAverages
+      },
+      fees: {
+        totalDue: totalFeesDue,
+        totalPaid: totalFeesPaid,
+        totalPending: totalPending,
+        collectionRate: Math.round(collectionRate * 100) / 100,
+        paymentsThisMonth: paymentsThisMonth,
+        paymentsThisYear: paymentsThisYear,
+        overdueCount: overdueCount,
+        pendingCount: pendingCount,
+        monthlyCollection: monthlyCollection
       }
     };
 

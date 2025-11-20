@@ -11,8 +11,8 @@ const AttendanceChartContainer = () => {
   
   if (!schoolIdParam) {
     return (
-      <Card className="w-full h-[450px] sm:h-[450px] border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
-        <CardHeader className="border-b border-gray-200 dark:border-gray-700 pb-3">
+      <Card className="w-full h-full border-0 shadow-lg bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-900/20 dark:via-teal-900/20 dark:to-cyan-900/20 overflow-hidden">
+        <CardHeader className="border-b border-emerald-200/50 dark:border-emerald-700/50 pb-3">
           <CardTitle className="text-base sm:text-lg font-bold">Attendance Overview</CardTitle>
         </CardHeader>
         <CardContent className="h-full flex items-center justify-center p-3 sm:p-6">
@@ -27,8 +27,8 @@ const AttendanceChartContainer = () => {
 
   if (isLoading) {
     return (
-      <Card className="w-full h-[450px] sm:h-[450px] border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
-        <CardHeader className="border-b border-gray-200 dark:border-gray-700 pb-3">
+      <Card className="w-full h-full border-0 shadow-lg bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-900/20 dark:via-teal-900/20 dark:to-cyan-900/20 overflow-hidden">
+        <CardHeader className="border-b border-emerald-200/50 dark:border-emerald-700/50 pb-3">
           <Skeleton className="h-5 sm:h-6 w-24 sm:w-32" />
         </CardHeader>
         <CardContent className="h-full p-3 sm:p-6">
@@ -42,8 +42,8 @@ const AttendanceChartContainer = () => {
 
   if (!dashboardData || !dashboardData.attendance?.monthlyAverages) {
     return (
-      <Card className="w-full h-[450px] sm:h-[450px] border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
-        <CardHeader className="border-b border-gray-200 dark:border-gray-700 pb-3">
+      <Card className="w-full h-full border-0 shadow-lg bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-900/20 dark:via-teal-900/20 dark:to-cyan-900/20 overflow-hidden">
+        <CardHeader className="border-b border-emerald-200/50 dark:border-emerald-700/50 pb-3">
           <CardTitle className="text-base sm:text-lg font-bold">Attendance Overview</CardTitle>
         </CardHeader>
         <CardContent className="h-full flex items-center justify-center p-3 sm:p-6">
@@ -62,7 +62,7 @@ const AttendanceChartContainer = () => {
   );
 
   return (
-    <Card className="w-full h-[450px] sm:h-[450px] border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
+    <Card className="w-full h-full border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
       <CardHeader className="border-b border-gray-200 dark:border-gray-700 pb-3">
         <CardTitle className="text-base sm:text-lg font-bold">Attendance Overview</CardTitle>
       </CardHeader>

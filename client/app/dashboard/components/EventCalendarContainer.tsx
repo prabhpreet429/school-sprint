@@ -16,8 +16,8 @@ const EventCalendarContainer = ({ searchParams }: EventCalendarContainerProps) =
   
   if (!schoolIdParam) {
     return (
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-        <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-900/20 dark:via-orange-900/20 dark:to-yellow-900/20">
+        <CardHeader className="border-b border-amber-200/50 dark:border-amber-700/50">
           <CardTitle className="text-lg font-bold">Calendar</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -59,11 +59,11 @@ const EventCalendarContainer = ({ searchParams }: EventCalendarContainerProps) =
   }
 
   return (
-    <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+    <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-900/20 dark:via-orange-900/20 dark:to-yellow-900/20 h-full flex flex-col">
       <CardHeader className="border-b border-gray-200 dark:border-gray-700">
         <CardTitle className="text-lg font-bold">Calendar</CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="p-6 flex-1 overflow-hidden">
         <Calendar 
           events={dashboardData.upcomingEvents} 
           holidays={dashboardData.holidays || []}

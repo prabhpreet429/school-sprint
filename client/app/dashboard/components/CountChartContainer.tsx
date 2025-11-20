@@ -13,8 +13,8 @@ const CountChartContainer = () => {
   
   if (!schoolIdParam) {
     return (
-      <Card className="w-full h-[450px] border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-        <CardHeader className="border-b border-gray-200 dark:border-gray-700 pb-3">
+      <Card className="w-full h-full border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+        <CardHeader className="border-b border-blue-200/50 dark:border-indigo-700/50 pb-3">
           <CardTitle className="text-lg font-bold">Gender Distribution</CardTitle>
         </CardHeader>
         <CardContent className="h-full flex items-center justify-center p-4 overflow-hidden">
@@ -29,7 +29,7 @@ const CountChartContainer = () => {
 
   if (isLoading) {
     return (
-      <Card className="w-full h-[450px] border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+      <Card className="w-full h-full border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
         <CardHeader className="border-b border-gray-200 dark:border-gray-700">
           <Skeleton className="h-6 w-32" />
         </CardHeader>
@@ -44,7 +44,7 @@ const CountChartContainer = () => {
 
   if (!dashboardData) {
     return (
-      <Card className="w-full h-[450px] border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+      <Card className="w-full h-full border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
         <CardHeader className="border-b border-gray-200 dark:border-gray-700">
           <CardTitle className="text-lg font-bold">Gender Distribution</CardTitle>
         </CardHeader>
@@ -66,7 +66,7 @@ const CountChartContainer = () => {
   // Show message if no data
   if (total === 0) {
     return (
-      <Card className="w-full h-[450px] border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+      <Card className="w-full h-full border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
         <CardHeader className="border-b border-gray-200 dark:border-gray-700">
           <CardTitle className="text-lg font-bold">Gender Distribution</CardTitle>
         </CardHeader>
@@ -94,7 +94,7 @@ const CountChartContainer = () => {
   const girlsOffset = -boysGap;
 
   return (
-    <Card className="w-full h-[450px] border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
+      <Card className="w-full h-full border-0 shadow-lg bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-800 dark:via-indigo-900/30 dark:to-purple-900/30 overflow-hidden">
       <CardHeader className="border-b border-gray-200 dark:border-gray-700 pb-3">
         <CardTitle className="text-lg font-bold">Gender Distribution</CardTitle>
       </CardHeader>
@@ -168,7 +168,7 @@ const CountChartContainer = () => {
           {/* Legend with icons */}
           <div className="w-full space-y-2.5 max-w-full flex-1 flex flex-col justify-center">
             {/* Boys */}
-            <div className="flex items-center justify-between p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-blue-100/60 dark:bg-blue-900/30 border border-blue-200/60 dark:border-blue-800/50">
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex-shrink-0">
                   <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -184,7 +184,7 @@ const CountChartContainer = () => {
             </div>
 
             {/* Girls */}
-            <div className="flex items-center justify-between p-3 rounded-xl bg-pink-50 dark:bg-pink-900/20 border border-pink-100 dark:border-pink-800/50">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-pink-100/60 dark:bg-pink-900/30 border border-pink-200/60 dark:border-pink-800/50">
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <div className="p-2 rounded-lg bg-pink-100 dark:bg-pink-900/40 flex-shrink-0">
                   <Users className="h-4 w-4 text-pink-600 dark:text-pink-400" />

@@ -7,6 +7,7 @@ import AttendanceChartContainer from "./components/AttendanceChartContainer";
 import EventCalendarContainer from "./components/EventCalendarContainer";
 import EventsList from "./components/EventsList";
 import Announcements from "./components/Announcements";
+import FeesSummary from "./components/FeesSummary";
 import { useGetDashboardDataQuery } from "@/state/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -115,7 +116,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-4 flex gap-4 flex-col md:flex-row relative">
+    <div className="p-4 flex flex-col gap-6 relative">
       {isFetching && data && (
         <div className="absolute top-0 left-0 right-0 bottom-0 bg-white/50 dark:bg-gray-900/50 z-10 flex items-center justify-center">
           <div className="flex flex-col items-center gap-2">
@@ -124,38 +125,50 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-      {/* LEFT */}
-      <div className="w-full lg:w-2/3 flex flex-col gap-8">
-        {/* USER CARDS */}
-        <div className="flex gap-4 flex-col sm:flex-row sm:flex-nowrap">
+      
+      {/* FIRST ROW: School Details, Students Count, Teacher Count */}
+      <div className="flex gap-4 flex-col sm:flex-row sm:flex-nowrap items-stretch">
+        <div className="flex-1 min-w-0 flex items-stretch">
           <UserCard 
             type="school" 
             schoolDetails={dashboardData.schoolDetails || undefined}
           />
+        </div>
+        <div className="flex items-stretch">
           <UserCard type="student" count={dashboardData.counts.students} />
+        </div>
+        <div className="flex items-stretch">
           <UserCard type="teacher" count={dashboardData.counts.teachers} />
         </div>
-
-        {/* MIDDLE CHARTS */}
-        <div className="flex gap-4 flex-col lg:flex-row">
-          {/* COUNT CHART */}
-          <div className="w-full lg:w-1/3 h-[450px]">
-            <CountChartContainer />
-          </div>
-          {/* ATTENDANCE CHART */}
-          <div className="w-full lg:w-2/3 h-[450px]">
-            <AttendanceChartContainer />
-          </div>
-        </div>
-
-        {/* BOTTOM - ANNOUNCEMENTS */}
-        <Announcements announcements={dashboardData?.announcements || []} />
       </div>
 
-      {/* RIGHT */}
-      <div className="w-full lg:w-1/3 flex flex-col gap-8">
-        <EventCalendarContainer />
-        <EventsList />
+      {/* SECOND ROW: Gender Distribution, Attendance, Calendar */}
+      <div className="flex gap-4 flex-col lg:flex-row">
+        {/* Gender Distribution Card */}
+        <div className="w-full lg:w-1/3 h-[550px]">
+          <CountChartContainer />
+        </div>
+        {/* Attendance Chart */}
+        <div className="w-full lg:w-1/3 h-[550px]">
+          <AttendanceChartContainer />
+        </div>
+        {/* Calendar */}
+        <div className="w-full lg:w-1/3 h-[550px]">
+          <EventCalendarContainer />
+        </div>
+      </div>
+
+      {/* THIRD ROW: Fees Summary, Announcements, and Events */}
+      <div className="flex gap-4 flex-col lg:flex-row">
+        <div className="w-full lg:w-1/3 h-[400px]">
+          <FeesSummary />
+        </div>
+        <div className="w-full lg:w-1/3 h-[400px]">
+          <Announcements announcements={dashboardData?.announcements || []} />
+        </div>
+        <div className="w-full lg:w-1/3 h-[400px]">
+          <EventsList />
+        </div>
       </div>
     </div>
   );

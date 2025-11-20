@@ -13,11 +13,11 @@ const EventsList = () => {
 
   if (!schoolIdParam) {
     return (
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-        <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-purple-900/20 dark:via-indigo-900/20 dark:to-blue-900/20 h-full flex flex-col">
+        <CardHeader className="border-b border-purple-200/50 dark:border-purple-700/50">
           <CardTitle className="text-lg font-bold">Upcoming Events</CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-6 flex-1">
           <p className="text-sm text-muted-foreground">Access Denied</p>
         </CardContent>
       </Card>
@@ -29,11 +29,11 @@ const EventsList = () => {
 
   if (isLoading) {
     return (
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-        <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-purple-900/20 dark:via-indigo-900/20 dark:to-blue-900/20 h-full flex flex-col">
+        <CardHeader className="border-b border-purple-200/50 dark:border-purple-700/50">
           <Skeleton className="h-6 w-32" />
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-6 flex-1">
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-20 w-full" />
@@ -48,11 +48,11 @@ const EventsList = () => {
 
   if (!dashboardData) {
     return (
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-        <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-purple-900/20 dark:via-indigo-900/20 dark:to-blue-900/20 h-full flex flex-col">
+        <CardHeader className="border-b border-purple-200/50 dark:border-purple-700/50">
           <CardTitle className="text-lg font-bold">Upcoming Events</CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-6 flex-1">
           <p className="text-sm text-muted-foreground">No data available</p>
         </CardContent>
       </Card>
@@ -62,15 +62,15 @@ const EventsList = () => {
   const events = dashboardData.upcomingEvents || [];
 
   return (
-    <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+    <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 h-full flex flex-col">
       <CardHeader className="border-b border-gray-200 dark:border-gray-700">
         <CardTitle className="text-lg font-bold flex items-center gap-2">
-          <CalendarIcon className="h-5 w-5 text-primary" />
+          <CalendarIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
           Upcoming Events
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
-        <div className="space-y-3 max-h-[400px] overflow-y-auto">
+      <CardContent className="p-6 flex-1 overflow-y-auto">
+        <div className="space-y-3">
           {events.length > 0 ? (
             events.map((event) => {
               const startDate = new Date(event.startTime);
@@ -81,7 +81,7 @@ const EventsList = () => {
               return (
                 <div
                   key={event.id}
-                  className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-100 dark:border-blue-800/50 hover:shadow-md transition-all duration-300"
+                  className="p-4 bg-gradient-to-r from-purple-100/80 to-indigo-100/80 dark:from-purple-800/30 dark:to-indigo-800/30 rounded-xl border border-purple-200/50 dark:border-purple-700/50 hover:shadow-md transition-all duration-300"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
@@ -112,7 +112,7 @@ const EventsList = () => {
                           </span>
                         </div>
                         {event.className && (
-                          <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mt-1">
+                            <p className="text-xs font-medium text-purple-600 dark:text-purple-400 mt-1">
                             Class: {event.className}
                           </p>
                         )}

@@ -575,6 +575,17 @@ export interface DashboardData {
     statistics: AttendanceStatistics;
     monthlyAverages: MonthlyAverage[];
   };
+  fees: {
+    totalDue: number;
+    totalPaid: number;
+    totalPending: number;
+    collectionRate: number;
+    paymentsThisMonth: number;
+    paymentsThisYear: number;
+    overdueCount: number;
+    pendingCount: number;
+    monthlyCollection: Array<{ month: string; amount: number }>;
+  };
 }
 
 export interface DashboardResponse {
