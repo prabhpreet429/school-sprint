@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/contexts/AuthContext";
 import DashboardWrapper from "@/app/dashboardWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -20,9 +21,11 @@ export default function RootLayout({
       <body
         className={inter.className}
       >
-        <DashboardWrapper>
-          {children}
-        </DashboardWrapper>
+        <AuthProvider>
+          <DashboardWrapper>
+            {children}
+          </DashboardWrapper>
+        </AuthProvider>
       </body>
     </html>
   );

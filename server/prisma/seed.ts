@@ -1,4 +1,5 @@
 import { PrismaClient, UserSex, Day, ParentRelationship } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -45,22 +46,26 @@ async function main() {
   console.log(`✅ Created school: ${school.name} (ID: ${school.id})\n`);
 
   // 2. Seed Admins (needs schoolId) - RIGHT AFTER School is created
+  // Only one admin per school
   console.log("👤 Seeding Admins...");
-  const adminsData = [
-    { username: "admin_main" },
-    { username: "admin_secondary" },
-  ];
-  const createdAdmins = [];
-  for (const admin of adminsData) {
-    const created = await prisma.admin.create({
-      data: {
-        ...admin,
-        schoolId: school.id,
-      },
-    });
-    createdAdmins.push(created);
-  }
-  console.log(`✅ Created ${createdAdmins.length} admins`);
+  const adminData = {
+    username: "admin_main",
+    email: "admin@springfield-elem.edu",
+    password: "admin123",
+    role: "admin"
+  };
+  
+  const hashedPassword = await bcrypt.hash(adminData.password, 10);
+  const createdAdmin = await prisma.admin.create({
+    data: {
+      username: adminData.username,
+      email: adminData.email,
+      password: hashedPassword,
+      role: adminData.role,
+      schoolId: school.id,
+    },
+  });
+  console.log(`✅ Created admin: ${createdAdmin.email}`);
 
   // 3. Seed Grades (needs schoolId)
   console.log("📚 Seeding Grades...");
@@ -818,7 +823,7 @@ async function main() {
   console.log(`   Grades: ${createdGrades.length}`);
   console.log(`   Subjects: ${createdSubjects.length}`);
   console.log(`   Parents: ${createdParents.length}`);
-  console.log(`   Admins: ${createdAdmins.length}`);
+  console.log(`   Admins: 1 (only one admin per school)`);
   console.log(`   Teachers: ${createdTeachers.length}`);
   console.log(`   Classes: ${createdClasses.length}`);
   console.log(`   Students: ${createdStudents.length}`);

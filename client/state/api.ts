@@ -598,6 +598,16 @@ export interface DashboardResponse {
 export const api = createApi({
   baseQuery: fetchBaseQuery({ 
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
+    prepareHeaders: (headers) => {
+      // Get token from localStorage
+      if (typeof window !== "undefined") {
+        const token = localStorage.getItem("token");
+        if (token) {
+          headers.set("authorization", `Bearer ${token}`);
+        }
+      }
+      return headers;
+    },
   }),
   reducerPath: "api",
   tagTypes: ["DashboardData", "Students", "Teachers", "Parents", "Grades", "Classes", "Events", "Announcements", "Lessons", "Subjects", "Exams", "Results", "Attendances", "Assignments", "Fees", "StudentFees", "Payments"],

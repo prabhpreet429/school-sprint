@@ -23,11 +23,13 @@ import {
   FileText,
   DollarSign,
   Receipt,
+  UserPlus,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import React from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SidebarLinkProps {
   href: string;
@@ -79,6 +81,7 @@ const SidebarLink = ({
 
 const Sidebar = () => {
   const dispatch = useAppDispatch();
+  const { user } = useAuth();
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed
   );
@@ -99,21 +102,27 @@ const Sidebar = () => {
           isSidebarCollapsed ? "px-4" : "px-6"
         }`}
       >
-        Logo
-        {/* <Image
-          src="https://s3-inventorymanagement.s3.us-east-2.amazonaws.com/logo.png"
-          alt="edstock-logo"
-          width={27}
-          height={27}
-          className="rounded w-8"
-        /> */}
-        <h1
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-extrabold text-xl text-gray-900 dark:text-gray-100`}
-        >
-          EDSTOCK
-        </h1>
+        <div className="flex items-center gap-2">
+          <div className="relative w-10 h-10 flex items-center justify-center flex-shrink-0">
+            <img
+              src="/schoolsprint-logo.png"
+              alt="SchoolSprint Logo"
+              className="w-full h-full object-cover rounded-full"
+              style={{ maxWidth: '40px', maxHeight: '40px' }}
+              onError={(e) => {
+                console.error('Logo failed to load:', e);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+          <h1
+            className={`${
+              isSidebarCollapsed ? "hidden" : "block"
+            } font-extrabold text-xl text-gray-900 dark:text-gray-100 whitespace-nowrap`}
+          >
+            SchoolSprint
+          </h1>
+        </div>
 
         <button
           className="md:hidden px-3 py-3 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900"
@@ -149,6 +158,22 @@ const Sidebar = () => {
           label="Parents"
           isCollapsed={isSidebarCollapsed}
         />
+        {user?.role === "admin" && (
+          <>
+            <SidebarLink
+              href="/users"
+              icon={Users}
+              label="Users"
+              isCollapsed={isSidebarCollapsed}
+            />
+            <SidebarLink
+              href="/accounts/create"
+              icon={UserPlus}
+              label="Create Account"
+              isCollapsed={isSidebarCollapsed}
+            />
+          </>
+        )}
         <SidebarLink
           href="/grades"
           icon={School}
@@ -237,7 +262,7 @@ const Sidebar = () => {
 
       {/* FOOTER */}
       <div className={`${isSidebarCollapsed ? "hidden" : "block"} mb-10`}>
-        <p className="text-center text-xs text-gray-500 dark:text-gray-400">&copy; 2024 Edstock</p>
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400">&copy; 2024 SchoolSprint</p>
       </div>
     </div>
   );

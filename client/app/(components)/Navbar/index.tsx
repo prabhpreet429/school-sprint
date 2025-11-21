@@ -2,12 +2,14 @@
 
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsDarkMode, setIsSidebarCollapsed } from "@/state";
-import { Bell, Menu, Moon, Sun } from "lucide-react";
+import { Bell, Menu, Moon, Sun, LogOut } from "lucide-react";
 import Image from "next/image";
 import React from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const dispatch = useAppDispatch();
+  const { user, logout } = useAuth();
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed
   );
@@ -19,6 +21,10 @@ const Navbar = () => {
 
   const toggleDarkMode = () => {
     dispatch(setIsDarkMode(!isDarkMode));
+  };
+
+  const handleSignOut = () => {
+    logout();
   };
 
   return (
@@ -52,16 +58,32 @@ const Navbar = () => {
             </span>
           </div> */}
           <hr className="w-0 h-7 border border-solid border-l border-gray-300 dark:border-gray-600 mx-3" />
-          <div className="flex items-center gap-3 cursor-pointer">
-            Logo
-            {/* <Image
-              src="https://s3-inventorymanagement.s3.us-east-2.amazonaws.com/profile.jpg"
-              alt="Profile"
-              width={50}
-              height={50}
-              className="rounded-full h-full object-cover"
-            /> */}
-            <span className="font-semibold text-gray-900 dark:text-gray-100">Ed Roh</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 cursor-pointer">
+              Logo
+              {/* <Image
+                src="https://s3-inventorymanagement.s3.us-east-2.amazonaws.com/profile.jpg"
+                alt="Profile"
+                width={50}
+                height={50}
+                className="rounded-full h-full object-cover"
+              /> */}
+              <div className="flex flex-col">
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {user?.username || "User"}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {user?.role || ""}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={handleSignOut}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="w-5 h-5 text-gray-500 dark:text-gray-400 cursor-pointer" />
+            </button>
           </div>
         </div>
       </div>

@@ -35,7 +35,15 @@ CREATE TABLE "School" (
 CREATE TABLE "Admin" (
     "id" SERIAL NOT NULL,
     "username" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "role" TEXT NOT NULL DEFAULT 'admin',
     "schoolId" INTEGER NOT NULL,
+    "teacherId" INTEGER,
+    "studentId" INTEGER,
+    "parentId" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Admin_pkey" PRIMARY KEY ("id")
 );
@@ -295,7 +303,19 @@ CREATE TABLE "_SubjectToTeacher" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Admin_email_key" ON "Admin"("email");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Admin_username_schoolId_key" ON "Admin"("username", "schoolId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Admin_teacherId_key" ON "Admin"("teacherId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Admin_studentId_key" ON "Admin"("studentId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Admin_parentId_key" ON "Admin"("parentId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Student_username_schoolId_key" ON "Student"("username", "schoolId");
@@ -347,6 +367,15 @@ CREATE INDEX "_SubjectToTeacher_B_index" ON "_SubjectToTeacher"("B");
 
 -- AddForeignKey
 ALTER TABLE "Admin" ADD CONSTRAINT "Admin_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Admin" ADD CONSTRAINT "Admin_teacherId_fkey" FOREIGN KEY ("teacherId") REFERENCES "Teacher"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Admin" ADD CONSTRAINT "Admin_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Admin" ADD CONSTRAINT "Admin_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Parent"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Student" ADD CONSTRAINT "Student_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;

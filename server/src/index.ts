@@ -4,8 +4,10 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
 
 /* ROUTES IMPORTS */
+import authRoutes from "./routes/authRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import teacherRoutes from "./routes/teacherRoutes.js";
@@ -23,11 +25,13 @@ import assignmentRoutes from "./routes/assignmentRoutes.js";
 import feeRoutes from "./routes/feeRoutes.js";
 import studentFeeRoutes from "./routes/studentFeeRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import schoolRoutes from "./routes/schoolRoutes.js";
 
 /* CONFIGURATIONS */
 dotenv.config();
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
@@ -40,6 +44,7 @@ app.get("/hello", (req, res) => {
 });
 
 /* ROUTES */
+app.use("/api/auth", authRoutes);
 app.use("/dashboard", dashboardRoutes); // http://localhost:8000/dashboard?schoolId=1
 app.use("/students", studentRoutes);
 app.use("/teachers", teacherRoutes);
@@ -57,6 +62,7 @@ app.use("/assignments", assignmentRoutes);
 app.use("/fees", feeRoutes);
 app.use("/student-fees", studentFeeRoutes);
 app.use("/payments", paymentRoutes);
+app.use("/api/schools", schoolRoutes);
 
 /* SERVER */
 const port = Number(process.env.PORT) || 3001;

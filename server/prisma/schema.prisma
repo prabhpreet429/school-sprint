@@ -38,12 +38,29 @@ model School {
 }
 
 model Admin {
-  id       Int    @id @default(autoincrement())
-  username String
-  schoolId Int
-  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  id        Int      @id @default(autoincrement())
+  username  String
+  email     String   @unique
+  password  String
+  role      String   @default("admin") // admin, teacher, student, parent
+  schoolId  Int
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  
+  // Optional links to existing records (for teacher/student/parent accounts)
+  teacherId Int?
+  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  studentId Int?
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parentId  Int?
+  parent    Parent?  @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([username, schoolId])
+  @@unique([teacherId])
+  @@unique([studentId])
+  @@unique([parentId])
 }
 
 model Student {
@@ -70,6 +87,7 @@ model Student {
   studentFees StudentFee[]
   payments    Payment[]
   birthday    DateTime
+  admin       Admin?       // Link to Admin account if exists
 
   @@unique([username, schoolId])
   @@unique([email, schoolId])
@@ -94,6 +112,7 @@ model Teacher {
   lessons   Lesson[]
   classes   Class[]
   birthday  DateTime
+  admin     Admin?    // Link to Admin account if exists
 
   @@unique([username, schoolId])
   @@unique([email, schoolId])
@@ -112,6 +131,7 @@ model Parent {
   schoolId       Int
   school         School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   studentParents StudentParent[]
+  admin          Admin?          // Link to Admin account if exists
 
   @@unique([username, schoolId])
   @@unique([email, schoolId])
