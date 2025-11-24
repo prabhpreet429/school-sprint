@@ -165,6 +165,7 @@ export default function SignUpPage() {
                   <SelectItem value="Asia/Tokyo">Asia/Tokyo (JST)</SelectItem>
                   <SelectItem value="Asia/Shanghai">Asia/Shanghai (CST)</SelectItem>
                   <SelectItem value="Asia/Dubai">Asia/Dubai (GST)</SelectItem>
+                  <SelectItem value="Asia/Kolkata">Asia/Kolkata (IST - Indian Standard Time)</SelectItem>
                   <SelectItem value="Australia/Sydney">Australia/Sydney (AEST)</SelectItem>
                 </SelectContent>
               </Select>
