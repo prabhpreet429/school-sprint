@@ -173,10 +173,10 @@ const StudentView = () => {
                     <span>{student.phone}</span>
                   </div>
                 )}
-                {student.address && (
+                {student.addressLine1 && (
                   <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                     <MapPin className="w-5 h-5 text-gray-500" />
-                    <span>{student.address}</span>
+                    <span>{student.addressLine1}</span>
                   </div>
                 )}
                 {student.birthday && (

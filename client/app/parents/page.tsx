@@ -145,7 +145,7 @@ const Parents = () => {
                   <TableCell>{parent.surname}</TableCell>
                   <TableCell>{parent.email || "N/A"}</TableCell>
                   <TableCell>{parent.phone}</TableCell>
-                  <TableCell>{parent.address}</TableCell>
+                  <TableCell>{parent.addressLine1 || "N/A"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button

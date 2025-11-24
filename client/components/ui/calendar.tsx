@@ -19,6 +19,11 @@ interface CalendarProps {
     startTime: string;
     endTime: string;
     title: string;
+    description?: string;
+    class?: {
+      id: number;
+      name: string;
+    } | null;
   }>;
   holidays?: Array<{
     date: string;
@@ -279,9 +284,9 @@ export function Calendar({ events = [], holidays = [], className }: CalendarProp
                             </>
                           )}
                         </div>
-                        {event.className && (
+                        {event.class?.name && (
                           <p className="text-xs text-muted-foreground mt-1">
-                            Class: {event.className}
+                            Class: {event.class.name}
                           </p>
                         )}
                       </div>

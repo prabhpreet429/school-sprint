@@ -149,10 +149,10 @@ const TeacherView = () => {
                     <span>{teacher.phone}</span>
                   </div>
                 )}
-                {teacher.address && (
+                {teacher.addressLine1 && (
                   <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                     <MapPin className="w-5 h-5 text-gray-500" />
-                    <span>{teacher.address}</span>
+                    <span>{teacher.addressLine1}</span>
                   </div>
                 )}
                 {teacher.birthday && (

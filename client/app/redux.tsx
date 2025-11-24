@@ -80,12 +80,12 @@ export default function StoreProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const storeRef = useRef<AppStore>();
+  const storeRef = useRef<AppStore | undefined>(undefined);
   if (!storeRef.current) {
     storeRef.current = makeStore();
     setupListeners(storeRef.current.dispatch);
   }
-  const persistor = useMemo(() => persistStore(storeRef.current), []);
+  const persistor = useMemo(() => persistStore(storeRef.current!), []);
 
   return (
     <Provider store={storeRef.current}>

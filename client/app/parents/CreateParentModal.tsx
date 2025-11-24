@@ -16,7 +16,7 @@ type ParentFormData = {
   username: string;
   name: string;
   surname: string;
-  address: string;
+  addressLine1: string;
   schoolId: number;
   phone: string;
   email?: string;
@@ -44,7 +44,7 @@ const CreateParentModal = ({
     username: "",
     name: "",
     surname: "",
-    address: "",
+    addressLine1: "",
     schoolId,
     phone: "",
     email: "",
@@ -59,7 +59,7 @@ const CreateParentModal = ({
         username: initialData.username || "",
         name: initialData.name || "",
         surname: initialData.surname || "",
-        address: initialData.address || "",
+        addressLine1: initialData.addressLine1 || "",
         schoolId,
         phone: initialData.phone || "",
         email: initialData.email || "",
@@ -70,7 +70,7 @@ const CreateParentModal = ({
         username: "",
         name: "",
         surname: "",
-        address: "",
+        addressLine1: "",
         schoolId,
         phone: "",
         email: "",
@@ -107,8 +107,8 @@ const CreateParentModal = ({
     if (!formData.surname.trim()) {
       newErrors.surname = "Surname is required";
     }
-    if (!formData.address.trim()) {
-      newErrors.address = "Address is required";
+    if (!formData.addressLine1.trim()) {
+      newErrors.addressLine1 = "Address is required";
     }
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone is required";
@@ -136,7 +136,7 @@ const CreateParentModal = ({
           username: "",
           name: "",
           surname: "",
-          address: "",
+          addressLine1: "",
           schoolId,
           phone: "",
           email: "",
@@ -248,14 +248,14 @@ const CreateParentModal = ({
                 Address <span className="text-red-500">*</span>
               </label>
               <Input
-                name="address"
-                value={formData.address}
+                name="addressLine1"
+                value={formData.addressLine1}
                 onChange={handleChange}
                 placeholder="Enter address"
-                className={errors.address ? "border-red-500" : ""}
+                className={errors.addressLine1 ? "border-red-500" : ""}
               />
-              {errors.address && (
-                <p className="text-red-500 text-xs mt-1">{errors.address}</p>
+              {errors.addressLine1 && (
+                <p className="text-red-500 text-xs mt-1">{errors.addressLine1}</p>
               )}
             </div>
           </div>
