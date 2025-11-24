@@ -23,7 +23,6 @@ import {
   FileText,
   DollarSign,
   Receipt,
-  UserPlus,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -103,12 +102,11 @@ const Sidebar = () => {
         }`}
       >
         <div className="flex items-center gap-2">
-          <div className="relative w-10 h-10 flex items-center justify-center flex-shrink-0">
+          <div className="relative w-10 h-10 flex items-center justify-center flex-shrink-0 rounded-full overflow-hidden">
             <img
               src="/schoolsprint-logo.png"
               alt="SchoolSprint Logo"
-              className="w-full h-full object-cover rounded-full"
-              style={{ maxWidth: '40px', maxHeight: '40px' }}
+              className="w-full h-full object-cover"
               onError={(e) => {
                 console.error('Logo failed to load:', e);
                 e.currentTarget.style.display = 'none';
@@ -140,64 +138,54 @@ const Sidebar = () => {
           label="Dashboard"
           isCollapsed={isSidebarCollapsed}
         />
-        <SidebarLink
-          href="/teachers"
-          icon={GraduationCap}
-          label="Teachers"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/students"
-          icon={UserCheck}
-          label="Students"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/parents"
-          icon={Users}
-          label="Parents"
-          isCollapsed={isSidebarCollapsed}
-        />
-        {user?.role === "admin" && (
+        {user?.role !== "student" && (
           <>
+            {user?.role === "admin" && (
+              <SidebarLink
+                href="/teachers"
+                icon={GraduationCap}
+                label="Teachers"
+                isCollapsed={isSidebarCollapsed}
+              />
+            )}
             <SidebarLink
-              href="/users"
-              icon={Users}
-              label="Users"
+              href="/students"
+              icon={UserCheck}
+              label="Students"
               isCollapsed={isSidebarCollapsed}
             />
             <SidebarLink
-              href="/accounts/create"
-              icon={UserPlus}
-              label="Create Account"
+              href="/parents"
+              icon={Users}
+              label="Parents"
+              isCollapsed={isSidebarCollapsed}
+            />
+            <SidebarLink
+              href="/grades"
+              icon={School}
+              label="Grades"
+              isCollapsed={isSidebarCollapsed}
+            />
+            <SidebarLink
+              href="/classes"
+              icon={Layers}
+              label="Classes"
+              isCollapsed={isSidebarCollapsed}
+            />
+            <SidebarLink
+              href="/lessons"
+              icon={NotebookPen}
+              label="Lessons"
+              isCollapsed={isSidebarCollapsed}
+            />
+            <SidebarLink
+              href="/subjects"
+              icon={BookMarked}
+              label="Subjects"
               isCollapsed={isSidebarCollapsed}
             />
           </>
         )}
-        <SidebarLink
-          href="/grades"
-          icon={School}
-          label="Grades"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/classes"
-          icon={Layers}
-          label="Classes"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/lessons"
-          icon={NotebookPen}
-          label="Lessons"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/subjects"
-          icon={BookMarked}
-          label="Subjects"
-          isCollapsed={isSidebarCollapsed}
-        />
         <SidebarLink
           href="/assignments"
           icon={FileText}
@@ -252,6 +240,14 @@ const Sidebar = () => {
           label="Announcements"
           isCollapsed={isSidebarCollapsed}
         />
+        {user?.role === "admin" && (
+          <SidebarLink
+            href="/users"
+            icon={Users}
+            label="Users"
+            isCollapsed={isSidebarCollapsed}
+          />
+        )}
         <SidebarLink
           href="/settings"
           icon={SlidersHorizontal}
@@ -262,7 +258,7 @@ const Sidebar = () => {
 
       {/* FOOTER */}
       <div className={`${isSidebarCollapsed ? "hidden" : "block"} mb-10`}>
-        <p className="text-center text-xs text-gray-500 dark:text-gray-400">&copy; 2024 SchoolSprint</p>
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400">&copy; 2025 SchoolSprint</p>
       </div>
     </div>
   );

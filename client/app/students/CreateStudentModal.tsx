@@ -24,7 +24,10 @@ type ParentFormData = {
   username: string;
   name: string;
   surname: string;
-  address: string;
+  addressLine1: string;
+  state?: string;
+  pinCode?: string;
+  country?: string;
   phone: string;
   email?: string;
   relationship: "FATHER" | "MOTHER" | "GUARDIAN";
@@ -34,7 +37,10 @@ type StudentFormData = {
   username: string;
   name: string;
   surname: string;
-  address: string;
+  addressLine1: string;
+  state?: string;
+  pinCode?: string;
+  country?: string;
   bloodType: string;
   sex: "MALE" | "FEMALE";
   schoolId: number;
@@ -75,7 +81,10 @@ const CreateStudentModal = ({
     username: "",
     name: "",
     surname: "",
-    address: "",
+    addressLine1: "",
+    state: "",
+    pinCode: "",
+    country: "",
     bloodType: "",
     sex: "MALE",
     schoolId,
@@ -84,7 +93,10 @@ const CreateStudentModal = ({
         username: "",
         name: "",
         surname: "",
-        address: "",
+        addressLine1: "",
+        state: "",
+        pinCode: "",
+        country: "",
         phone: "",
         email: "",
         relationship: "MOTHER",
@@ -133,7 +145,10 @@ const CreateStudentModal = ({
             username: sp.parent.username || "",
             name: sp.parent.name || "",
             surname: sp.parent.surname || "",
-            address: sp.parent.address || "",
+            addressLine1: sp.parent.addressLine1 || "",
+            state: sp.parent.state || "",
+            pinCode: sp.parent.pinCode || "",
+            country: sp.parent.country || "",
             phone: sp.parent.phone || "",
             email: sp.parent.email || "",
             relationship: sp.relationship || "MOTHER",
@@ -142,7 +157,10 @@ const CreateStudentModal = ({
             username: "",
             name: "",
             surname: "",
-            address: "",
+            addressLine1: "",
+            state: "",
+            pinCode: "",
+            country: "",
             phone: "",
             email: "",
             relationship: "MOTHER" as const,
@@ -152,7 +170,10 @@ const CreateStudentModal = ({
         username: initialData.username || "",
         name: initialData.name || "",
         surname: initialData.surname || "",
-        address: initialData.address || "",
+        addressLine1: initialData.addressLine1 || "",
+        state: initialData.state || "",
+        pinCode: initialData.pinCode || "",
+        country: initialData.country || "",
         bloodType: initialData.bloodType || "",
         sex: initialData.sex || "MALE",
         schoolId,
@@ -170,7 +191,10 @@ const CreateStudentModal = ({
         username: "",
         name: "",
         surname: "",
-        address: "",
+        addressLine1: "",
+        state: "",
+        pinCode: "",
+        country: "",
         bloodType: "",
         sex: "MALE",
         schoolId,
@@ -178,7 +202,10 @@ const CreateStudentModal = ({
           username: "",
           name: "",
           surname: "",
-          address: "",
+          addressLine1: "",
+          state: "",
+          pinCode: "",
+          country: "",
           phone: "",
           email: "",
           relationship: "MOTHER",
@@ -249,7 +276,10 @@ const CreateStudentModal = ({
           username: "",
           name: "",
           surname: "",
-          address: "",
+          addressLine1: "",
+          state: "",
+          pinCode: "",
+          country: "",
           phone: "",
           email: "",
           relationship: "GUARDIAN",
@@ -292,8 +322,8 @@ const CreateStudentModal = ({
     if (!formData.surname.trim()) {
       newErrors.surname = "Surname is required";
     }
-    if (!formData.address.trim()) {
-      newErrors.address = "Address is required";
+    if (!formData.country?.trim()) {
+      newErrors.country = "Country is required";
     }
     if (!formData.bloodType.trim()) {
       newErrors.bloodType = "Blood type is required";
@@ -324,8 +354,8 @@ const CreateStudentModal = ({
         if (!parent.surname?.trim()) {
           newErrors[`parents.${index}.surname`] = "Parent surname is required";
         }
-        if (!parent.address?.trim()) {
-          newErrors[`parents.${index}.address`] = "Parent address is required";
+        if (!parent.country?.trim()) {
+          newErrors[`parents.${index}.country`] = "Parent country is required";
         }
         if (!parent.phone?.trim()) {
           newErrors[`parents.${index}.phone`] = "Parent phone is required";
@@ -357,7 +387,10 @@ const CreateStudentModal = ({
           username: parent.username,
           name: parent.name,
           surname: parent.surname,
-          address: parent.address,
+          addressLine1: parent.addressLine1,
+          state: parent.state || undefined,
+          pinCode: parent.pinCode || undefined,
+          country: parent.country || undefined,
           phone: parent.phone,
           email: parent.email || undefined,
           relationship: parent.relationship,
@@ -373,7 +406,10 @@ const CreateStudentModal = ({
           username: "",
           name: "",
           surname: "",
-          address: "",
+          addressLine1: "",
+          state: "",
+          pinCode: "",
+          country: "",
           bloodType: "",
           sex: "MALE",
           schoolId,
@@ -382,7 +418,10 @@ const CreateStudentModal = ({
               username: "",
               name: "",
               surname: "",
-              address: "",
+              addressLine1: "",
+              state: "",
+              pinCode: "",
+              country: "",
               phone: "",
               email: "",
               relationship: "MOTHER",
@@ -492,20 +531,59 @@ const CreateStudentModal = ({
               />
             </div>
 
-            {/* Address */}
+            {/* Address Line 1 */}
             <div className="col-span-2">
               <label className="block text-sm font-medium mb-1">
-                Address <span className="text-red-500">*</span>
+                Address Line 1
               </label>
               <Input
-                name="address"
-                value={formData.address}
+                name="addressLine1"
+                value={formData.addressLine1 || ""}
                 onChange={handleChange}
-                placeholder="Enter address"
-                className={errors.address ? "border-red-500" : ""}
+                placeholder="Enter address line 1 (optional)"
               />
-              {errors.address && (
-                <p className="text-red-500 text-xs mt-1">{errors.address}</p>
+            </div>
+
+            {/* State */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                State / Province
+              </label>
+              <Input
+                name="state"
+                value={formData.state || ""}
+                onChange={handleChange}
+                placeholder="Enter state (optional)"
+              />
+            </div>
+
+            {/* Pin Code */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Pin Code / ZIP
+              </label>
+              <Input
+                name="pinCode"
+                value={formData.pinCode || ""}
+                onChange={handleChange}
+                placeholder="Enter pin code (optional)"
+              />
+            </div>
+
+            {/* Country */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Country <span className="text-red-500">*</span>
+              </label>
+              <Input
+                name="country"
+                value={formData.country || ""}
+                onChange={handleChange}
+                placeholder="Enter country"
+                className={errors.country ? "border-red-500" : ""}
+              />
+              {errors.country && (
+                <p className="text-red-500 text-xs mt-1">{errors.country}</p>
               )}
             </div>
 
@@ -833,25 +911,64 @@ const CreateStudentModal = ({
                       )}
                     </div>
 
-                    {/* Parent Address */}
+                    {/* Parent Address Line 1 */}
                     <div className="col-span-2">
                       <label className="block text-sm font-medium mb-1">
-                        Address <span className="text-red-500">*</span>
+                        Address Line 1
                       </label>
                       <Input
-                        name="address"
-                        value={parent.address}
+                        name="addressLine1"
+                        value={parent.addressLine1 || ""}
                         onChange={(e) => handleParentChange(e, index)}
-                        placeholder="Enter parent address"
+                        placeholder="Enter parent address line 1 (optional)"
+                      />
+                    </div>
+
+                    {/* Parent State */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        State / Province
+                      </label>
+                      <Input
+                        name="state"
+                        value={parent.state || ""}
+                        onChange={(e) => handleParentChange(e, index)}
+                        placeholder="Enter state (optional)"
+                      />
+                    </div>
+
+                    {/* Parent Pin Code */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Pin Code / ZIP
+                      </label>
+                      <Input
+                        name="pinCode"
+                        value={parent.pinCode || ""}
+                        onChange={(e) => handleParentChange(e, index)}
+                        placeholder="Enter pin code (optional)"
+                      />
+                    </div>
+
+                    {/* Parent Country */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Country <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        name="country"
+                        value={parent.country || ""}
+                        onChange={(e) => handleParentChange(e, index)}
+                        placeholder="Enter country"
                         className={
-                          errors[`parents.${index}.address`]
+                          errors[`parents.${index}.country`]
                             ? "border-red-500"
                             : ""
                         }
                       />
-                      {errors[`parents.${index}.address`] && (
+                      {errors[`parents.${index}.country`] && (
                         <p className="text-red-500 text-xs mt-1">
-                          {errors[`parents.${index}.address`]}
+                          {errors[`parents.${index}.country`]}
                         </p>
                       )}
                     </div>

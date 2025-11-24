@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { createAssignment, getAssignments, updateAssignment, deleteAssignment } from '../controllers/assignmentController.js';
+import { verifyToken } from '../controllers/authController.js';
 
 const router = Router();
 
@@ -7,7 +8,7 @@ const router = Router();
 router.get('/', getAssignments);
 
 // Route to create a new assignment
-router.post('/', createAssignment);
+router.post('/', verifyToken, createAssignment);
 
 // Route to update an assignment
 router.put('/:id', updateAssignment);

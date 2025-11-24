@@ -8,15 +8,18 @@ datasource db {
 }
 
 model School {
-  id        Int      @id @default(autoincrement())
-  name      String
-  address   String?
-  phone     String?
-  email     String?
-  country   String
-  timezone  String?  @default("UTC")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  name         String
+  addressLine1 String?
+  state        String?
+  pinCode      String?
+  country      String
+  phone        String?
+  email        String?
+  timezone     String?  @default("UTC")
+  logo         String?  // URL or path to school logo
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   admins        Admin[]
   students      Student[]
@@ -70,7 +73,10 @@ model Student {
   surname     String
   email       String?
   phone       String?
-  address     String
+  addressLine1 String?
+  state       String?
+  pinCode     String?
+  country     String
   img         String?
   bloodType   String
   sex         UserSex
@@ -95,24 +101,27 @@ model Student {
 }
 
 model Teacher {
-  id        Int       @id @default(autoincrement())
-  username  String
-  name      String
-  surname   String
-  email     String?
-  phone     String?
-  address   String
-  img       String?
-  bloodType String
-  sex       UserSex
-  createdAt DateTime  @default(now())
-  schoolId  Int
-  school    School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  subjects  Subject[]
-  lessons   Lesson[]
-  classes   Class[]
-  birthday  DateTime
-  admin     Admin?    // Link to Admin account if exists
+  id          Int       @id @default(autoincrement())
+  username    String
+  name        String
+  surname     String
+  email       String?
+  phone       String?
+  addressLine1 String?
+  state       String?
+  pinCode     String?
+  country     String
+  img         String?
+  bloodType   String
+  sex         UserSex
+  createdAt   DateTime  @default(now())
+  schoolId    Int
+  school      School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  subjects    Subject[]
+  lessons     Lesson[]
+  classes     Class[]
+  birthday    DateTime
+  admin       Admin?    // Link to Admin account if exists
 
   @@unique([username, schoolId])
   @@unique([email, schoolId])
@@ -126,7 +135,10 @@ model Parent {
   surname        String
   email          String?
   phone          String
-  address        String
+  addressLine1   String?
+  state          String?
+  pinCode        String?
+  country        String
   createdAt      DateTime        @default(now())
   schoolId       Int
   school         School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)

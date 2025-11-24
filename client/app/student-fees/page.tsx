@@ -8,6 +8,7 @@ import { PlusCircleIcon, SearchIcon, Edit, Trash2, Users } from "lucide-react";
 import CreateStudentFeeModal from "./CreateStudentFeeModal";
 import AssignFeesByGradeModal from "./AssignFeesByGradeModal";
 import { format } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Table,
   TableBody,
@@ -19,6 +20,7 @@ import {
 
 const StudentFees = () => {
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const schoolIdParam = searchParams?.get("schoolId");
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,7 +49,10 @@ const StudentFees = () => {
     );
   }
 
-  const { data, error, isLoading, isFetching } = useGetStudentFeesQuery({ schoolId });
+  const { data, error, isLoading, isFetching } = useGetStudentFeesQuery({ 
+    schoolId,
+    studentId: user?.role === "student" ? user.studentId : undefined,
+  });
   const [createStudentFee] = useCreateStudentFeeMutation();
   const [updateStudentFee] = useUpdateStudentFeeMutation();
   const [deleteStudentFee] = useDeleteStudentFeeMutation();
@@ -161,25 +166,27 @@ const StudentFees = () => {
 
       <div className="mb-6 flex justify-between items-center">
         <Header name="Student Fees" />
-        <div className="flex gap-2">
-          <button
-            onClick={() => setIsAssignModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 cursor-pointer"
-          >
-            <Users size={20} />
-            Assign by Grade
-          </button>
-          <button
-            onClick={() => {
-              setEditingStudentFee(null);
-              setIsModalOpen(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer"
-          >
-            <PlusCircleIcon size={20} />
-            Create Student Fee
-          </button>
-        </div>
+        {user?.role !== "student" && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsAssignModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 cursor-pointer"
+            >
+              <Users size={20} />
+              Assign by Grade
+            </button>
+            <button
+              onClick={() => {
+                setEditingStudentFee(null);
+                setIsModalOpen(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer"
+            >
+              <PlusCircleIcon size={20} />
+              Create Student Fee
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="w-full bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -194,13 +201,15 @@ const StudentFees = () => {
                 <TableHead>Paid</TableHead>
                 <TableHead>Due Date</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                {user?.role !== "student" && (
+                  <TableHead className="text-right">Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredStudentFees.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={user?.role === "student" ? 7 : 8} className="text-center py-8 text-muted-foreground">
                     No student fees found
                   </TableCell>
                 </TableRow>
@@ -233,24 +242,26 @@ const StudentFees = () => {
                           {remaining > 0 && ` ($${remaining.toFixed(2)} remaining)`}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleEditStudentFee(studentFee)}
-                            className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
-                            title="Edit"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteStudentFee(studentFee.id)}
-                            className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </TableCell>
+                      {user?.role !== "student" && (
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleEditStudentFee(studentFee)}
+                              className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
+                              title="Edit"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteStudentFee(studentFee.id)}
+                              className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </TableCell>
+                      )}
                     </TableRow>
                   );
                 })

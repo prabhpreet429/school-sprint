@@ -1,5 +1,5 @@
 import express from "express";
-import { login, register, getCurrentUser, verifyToken, checkAdminExists, createAccount, getPeopleWithoutAccounts, getAllUsers } from "../controllers/authController.js";
+import { login, register, getCurrentUser, updateCurrentUser, verifyToken, checkAdminExists, createAccount, getPeopleWithoutAccounts, getAllUsers } from "../controllers/authController.js";
 
 const router = express.Router();
 
@@ -10,5 +10,6 @@ router.get("/people-without-accounts", verifyToken, getPeopleWithoutAccounts); /
 router.get("/users", verifyToken, getAllUsers); // Protected - admin only
 router.post("/check-admin", checkAdminExists);
 router.get("/me", verifyToken, getCurrentUser);
+router.put("/me", verifyToken, updateCurrentUser); // Protected - update own account
 
 export default router;

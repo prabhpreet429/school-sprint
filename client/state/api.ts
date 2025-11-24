@@ -4,7 +4,9 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export interface SchoolDetails {
   id: number;
   name: string;
-  address: string | null;
+  addressLine1: string | null;
+  state: string | null;
+  pinCode: string | null;
   phone: string | null;
   email: string | null;
   country: string;
@@ -69,7 +71,10 @@ export interface Student {
   surname: string;
   email: string | null;
   phone: string | null;
-  address: string;
+  addressLine1: string | null;
+  state: string | null;
+  pinCode: string | null;
+  country: string;
   img: string | null;
   bloodType: string;
   sex: "MALE" | "FEMALE";
@@ -91,7 +96,10 @@ export interface Student {
       surname: string;
       email: string | null;
       phone: string | null;
-      address: string;
+      addressLine1: string;
+      state: string | null;
+      pinCode: string | null;
+      country: string | null;
     };
   }[];
   class?: {
@@ -164,7 +172,10 @@ export interface Teacher {
   surname: string;
   email: string | null;
   phone: string | null;
-  address: string;
+  addressLine1: string | null;
+  state: string | null;
+  pinCode: string | null;
+  country: string;
   img: string | null;
   bloodType: string;
   sex: "MALE" | "FEMALE";
@@ -219,7 +230,10 @@ export interface Parent {
   surname: string;
   email: string | null;
   phone: string;
-  address: string;
+  addressLine1: string | null;
+  state: string | null;
+  pinCode: string | null;
+  country: string;
   createdAt: string;
   schoolId: number;
   school?: {
@@ -617,12 +631,13 @@ export const api = createApi({
       query: (schoolId) => `dashboard?schoolId=${schoolId}`,
       providesTags: ["DashboardData"],
     }),
-    getStudents: build.query<{ success: boolean; data: Student[] }, { schoolId: number; search?: string }>({
-      query: ({ schoolId, search }) => ({
+    getStudents: build.query<{ success: boolean; data: Student[] }, { schoolId: number; search?: string; classId?: number }>({
+      query: ({ schoolId, search, classId }) => ({
         url: '/students',
         params: {
           schoolId,
           ...(search ? { search } : {}),
+          ...(classId ? { classId } : {}),
         },
       }),
       providesTags: ["Students"],
@@ -875,12 +890,13 @@ export const api = createApi({
       }),
       providesTags: ["Subjects"],
     }),
-    getLessons: build.query<{ success: boolean; data: Lesson[] }, { schoolId: number; search?: string }>({
-      query: ({ schoolId, search }) => ({
+    getLessons: build.query<{ success: boolean; data: Lesson[] }, { schoolId: number; search?: string; classId?: number }>({
+      query: ({ schoolId, search, classId }) => ({
         url: '/lessons',
         params: {
           schoolId,
           ...(search ? { search } : {}),
+          ...(classId ? { classId } : {}),
         },
       }),
       providesTags: ["Lessons"],
@@ -931,12 +947,13 @@ export const api = createApi({
       }),
       invalidatesTags: ["Subjects"],
     }),
-    getExams: build.query<{ success: boolean; data: Exam[] }, { schoolId: number; search?: string }>({
-      query: ({ schoolId, search }) => ({
+    getExams: build.query<{ success: boolean; data: Exam[] }, { schoolId: number; search?: string; classId?: number }>({
+      query: ({ schoolId, search, classId }) => ({
         url: '/exams',
         params: {
           schoolId,
           ...(search ? { search } : {}),
+          ...(classId ? { classId } : {}),
         },
       }),
       providesTags: ["Exams"],
@@ -997,12 +1014,13 @@ export const api = createApi({
       }),
       invalidatesTags: ["Results"],
     }),
-    getAttendances: build.query<{ success: boolean; data: Attendance[] }, { schoolId: number; search?: string }>({
-      query: ({ schoolId, search }) => ({
+    getAttendances: build.query<{ success: boolean; data: Attendance[] }, { schoolId: number; search?: string; classId?: number }>({
+      query: ({ schoolId, search, classId }) => ({
         url: '/attendances',
         params: {
           schoolId,
           ...(search ? { search } : {}),
+          ...(classId ? { classId } : {}),
         },
       }),
       providesTags: ["Attendances"],
@@ -1030,12 +1048,13 @@ export const api = createApi({
       }),
       invalidatesTags: ["Attendances"],
     }),
-    getAssignments: build.query<{ success: boolean; data: Assignment[] }, { schoolId: number; search?: string }>({
-      query: ({ schoolId, search }) => ({
+    getAssignments: build.query<{ success: boolean; data: Assignment[] }, { schoolId: number; search?: string; classId?: number }>({
+      query: ({ schoolId, search, classId }) => ({
         url: '/assignments',
         params: {
           schoolId,
           ...(search ? { search } : {}),
+          ...(classId ? { classId } : {}),
         },
       }),
       providesTags: ["Assignments"],

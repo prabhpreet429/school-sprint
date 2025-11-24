@@ -7,6 +7,12 @@ export interface User {
   role: string;
   schoolId: number;
   schoolName: string;
+  classId?: number; // For students - their class ID
+  classIds?: number[]; // For teachers - array of class IDs they teach
+  className?: string; // For students - their class name
+  classes?: Array<{ id: number; name: string }>; // For teachers - array of classes they teach
+  studentId?: number; // For students - their student record ID
+  teacherId?: number; // For teachers - their teacher record ID
 }
 
 export interface AuthResponse {

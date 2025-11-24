@@ -9,6 +9,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "SchoolSprint",
   description: "School Management System",
+  icons: {
+    icon: "/schoolsprint-logo.png",
+    shortcut: "/schoolsprint-logo.png",
+    apple: "/schoolsprint-logo.png",
+  },
 };
 
 export default function RootLayout({

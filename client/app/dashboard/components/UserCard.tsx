@@ -5,7 +5,9 @@ import { cn } from "@/lib/utils";
 
 interface SchoolDetails {
   name?: string;
-  address?: string | null;
+  addressLine1?: string | null;
+  state?: string | null;
+  pinCode?: string | null;
   phone?: string | null;
   email?: string | null;
   country?: string;
@@ -86,12 +88,19 @@ const UserCard = ({ type, count, label, schoolDetails }: UserCardProps) => {
           <div className="flex items-start gap-6 px-2">
             {/* Left Column */}
             <div className="flex-1 min-w-0 space-y-2.5">
-              {schoolDetails.address && (
+              {schoolDetails.addressLine1 && (
                 <div className="flex items-start gap-2">
                   <MapPin className="h-4 w-4 text-white/70 flex-shrink-0 mt-0.5" />
-                  <p className="text-white/85 text-sm leading-relaxed line-clamp-2">
-                    {schoolDetails.address}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white/85 text-sm leading-relaxed line-clamp-2">
+                      {schoolDetails.addressLine1}
+                    </p>
+                    {(schoolDetails.state || schoolDetails.pinCode) && (
+                      <p className="text-white/75 text-xs mt-0.5">
+                        {[schoolDetails.state, schoolDetails.pinCode].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
               {schoolDetails.country && (

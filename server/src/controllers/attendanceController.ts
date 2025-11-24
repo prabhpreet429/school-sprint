@@ -25,40 +25,109 @@ export const getAttendances = async (req: Request, res: Response) => {
 
     // Get optional search parameter
     const search = req.query.search ? String(req.query.search) : "";
+    
+    // Get optional classId parameter
+    const queryClassId = req.query.classId ? String(req.query.classId) : null;
+    const classId = queryClassId ? parseInt(queryClassId, 10) : null;
 
     // Build where clause
     const whereClause: any = {
       schoolId: schoolId,
     };
 
-    // Add search filter if provided
-    if (search) {
+    // Add classId filter if provided (can filter by student class or lesson class)
+    if (classId && !isNaN(classId)) {
       whereClause.OR = [
         {
           student: {
-            name: {
-              contains: search,
-              mode: "insensitive" as const,
-            },
-          },
-        },
-        {
-          student: {
-            surname: {
-              contains: search,
-              mode: "insensitive" as const,
-            },
+            classId: classId,
           },
         },
         {
           lesson: {
-            name: {
-              contains: search,
-              mode: "insensitive" as const,
-            },
+            classId: classId,
           },
         },
       ];
+    }
+
+    // Add search filter if provided
+    if (search) {
+      // If we already have an OR clause for classId, we need to combine them
+      if (classId && !isNaN(classId)) {
+        whereClause.AND = [
+          {
+            OR: [
+              {
+                student: {
+                  classId: classId,
+                },
+              },
+              {
+                lesson: {
+                  classId: classId,
+                },
+              },
+            ],
+          },
+          {
+            OR: [
+              {
+                student: {
+                  name: {
+                    contains: search,
+                    mode: "insensitive" as const,
+                  },
+                },
+              },
+              {
+                student: {
+                  surname: {
+                    contains: search,
+                    mode: "insensitive" as const,
+                  },
+                },
+              },
+              {
+                lesson: {
+                  name: {
+                    contains: search,
+                    mode: "insensitive" as const,
+                  },
+                },
+              },
+            ],
+          },
+        ];
+        delete whereClause.OR;
+      } else {
+        whereClause.OR = [
+          {
+            student: {
+              name: {
+                contains: search,
+                mode: "insensitive" as const,
+              },
+            },
+          },
+          {
+            student: {
+              surname: {
+                contains: search,
+                mode: "insensitive" as const,
+              },
+            },
+          },
+          {
+            lesson: {
+              name: {
+                contains: search,
+                mode: "insensitive" as const,
+              },
+            },
+          },
+        ];
+      }
     }
 
     const attendances = await prisma.attendance.findMany({
@@ -180,6 +249,33 @@ export const createAttendance = async (req: Request, res: Response) => {
         success: false,
         message: "present must be a boolean value",
       });
+    }
+
+    // Check if user is teacher and verify they own the lesson
+    const user = (req as any).user;
+    if (user && user.role === "teacher") {
+      const admin = await prisma.admin.findUnique({
+        where: { id: user.id },
+        include: { teacher: true },
+      });
+
+      if (!admin || !admin.teacherId) {
+        return res.status(403).json({
+          success: false,
+          message: "Teacher account not found",
+        });
+      }
+
+      const lesson = await prisma.lesson.findUnique({
+        where: { id: Number(lessonId) },
+      });
+
+      if (!lesson || lesson.teacherId !== admin.teacherId) {
+        return res.status(403).json({
+          success: false,
+          message: "You can only mark attendance for your own lessons",
+        });
+      }
     }
 
     // Create the attendance

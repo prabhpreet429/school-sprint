@@ -23,10 +23,21 @@ export const getExams = async (req: Request, res: Response) => {
     }
 
     const search = req.query.search ? String(req.query.search) : "";
+    
+    // Get optional classId parameter
+    const queryClassId = req.query.classId ? String(req.query.classId) : null;
+    const classId = queryClassId ? parseInt(queryClassId, 10) : null;
 
     const whereClause: any = {
       schoolId: schoolId,
     };
+
+    // Add classId filter if provided (through lesson)
+    if (classId && !isNaN(classId)) {
+      whereClause.lesson = {
+        classId: classId,
+      };
+    }
 
     if (search) {
       whereClause.OR = [
@@ -168,6 +179,29 @@ export const createExam = async (req: Request, res: Response) => {
         success: false,
         message: "Lesson not found or does not belong to this school",
       });
+    }
+
+    // Check if user is teacher and verify they own the lesson
+    const user = (req as any).user;
+    if (user && user.role === "teacher") {
+      const admin = await prisma.admin.findUnique({
+        where: { id: user.id },
+        include: { teacher: true },
+      });
+
+      if (!admin || !admin.teacherId) {
+        return res.status(403).json({
+          success: false,
+          message: "Teacher account not found",
+        });
+      }
+
+      if (lesson.teacherId !== admin.teacherId) {
+        return res.status(403).json({
+          success: false,
+          message: "You can only create exams for your own lessons",
+        });
+      }
     }
 
     const exam = await prisma.exam.create({

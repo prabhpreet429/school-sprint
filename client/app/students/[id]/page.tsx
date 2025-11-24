@@ -1,11 +1,13 @@
 "use client";
 
-import { useGetStudentByIdQuery } from "@/state/api";
+import { useGetStudentByIdQuery, useGetLessonsQuery } from "@/state/api";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Mail, Phone, MapPin, Calendar, GraduationCap, Users, Edit, Award, ClipboardCheck } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
+import StudentScheduleCalendar from "./StudentScheduleCalendar";
 import {
   Table,
   TableBody,
@@ -19,6 +21,7 @@ const StudentView = () => {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { user } = useAuth();
   const studentIdParam = params?.id as string;
   const schoolIdParam = searchParams?.get("schoolId");
 
@@ -49,6 +52,17 @@ const StudentView = () => {
     id: studentId,
     schoolId,
   });
+
+  // Fetch lessons for the student's class
+  const { data: lessonsData } = useGetLessonsQuery({
+    schoolId,
+    classId: data?.data?.classId,
+  });
+
+  const lessons = lessonsData?.data || [];
+  
+  // Check if the logged-in user is viewing their own profile
+  const isOwnProfile = user?.role === "student" && user.studentId === studentId;
 
   if (isLoading || isFetching) {
     return (
@@ -93,16 +107,18 @@ const StudentView = () => {
 
   return (
     <div className="p-4">
-      {/* Back Button */}
-      <div className="mb-6">
-        <Link
-          href={`/students?schoolId=${schoolId}`}
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Students
-        </Link>
-      </div>
+      {/* Back Button - Only show if not viewing own profile */}
+      {!isOwnProfile && (
+        <div className="mb-6">
+          <Link
+            href={`/students?schoolId=${schoolId}`}
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Students
+          </Link>
+        </div>
+      )}
 
       {/* Student Header Card */}
       <Card className="mb-6">
@@ -132,13 +148,15 @@ const StudentView = () => {
                   </h1>
                   <p className="text-gray-600 dark:text-gray-400">@{student.username}</p>
                 </div>
-                <button
-                  onClick={() => router.push(`/students?schoolId=${schoolId}`)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer"
-                >
-                  <Edit className="w-4 h-4" />
-                  Edit Student
-                </button>
+                {user?.role !== "student" && (
+                  <button
+                    onClick={() => router.push(`/students?schoolId=${schoolId}`)}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Edit Student
+                  </button>
+                )}
               </div>
 
               {/* Contact Info */}
@@ -428,6 +446,58 @@ const StudentView = () => {
                       </TableCell>
                       <TableCell>
                         {result.exam?.lesson?.subject?.name || result.assignment?.lesson?.subject?.name || "N/A"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Weekly Schedule Calendar */}
+      {lessons.length > 0 && (
+        <StudentScheduleCalendar lessons={lessons} />
+      )}
+
+      {/* Lessons Table */}
+      {lessons.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GraduationCap className="w-5 h-5" />
+              Lessons
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50 dark:bg-gray-900">
+                    <TableHead>Name</TableHead>
+                    <TableHead>Day</TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Subject</TableHead>
+                    <TableHead>Teacher</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {lessons.map((lesson: any) => (
+                    <TableRow
+                      key={lesson.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-900"
+                    >
+                      <TableCell className="font-medium">
+                        {lesson.name}
+                      </TableCell>
+                      <TableCell>{lesson.day}</TableCell>
+                      <TableCell>
+                        {format(new Date(lesson.startTime), "h:mm a")} - {format(new Date(lesson.endTime), "h:mm a")}
+                      </TableCell>
+                      <TableCell>{lesson.subject?.name || "N/A"}</TableCell>
+                      <TableCell>
+                        {lesson.teacher ? `${lesson.teacher.name} ${lesson.teacher.surname}` : "N/A"}
                       </TableCell>
                     </TableRow>
                   ))}

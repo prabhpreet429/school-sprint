@@ -25,11 +25,20 @@ export const getLessons = async (req: Request, res: Response) => {
 
     // Get optional search parameter
     const search = req.query.search ? String(req.query.search) : "";
+    
+    // Get optional classId parameter
+    const queryClassId = req.query.classId ? String(req.query.classId) : null;
+    const classId = queryClassId ? parseInt(queryClassId, 10) : null;
 
     // Build where clause
     const whereClause: any = {
       schoolId: schoolId,
     };
+
+    // Add classId filter if provided
+    if (classId && !isNaN(classId)) {
+      whereClause.classId = classId;
+    }
 
     // Add search filter if provided
     if (search) {

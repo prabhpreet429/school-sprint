@@ -133,7 +133,9 @@ export const getDashboardData = async (req: Request, res: Response) => {
         select: {
           id: true,
           name: true,
-          address: true,
+          addressLine1: true,
+          state: true,
+          pinCode: true,
           phone: true,
           email: true,
           country: true,

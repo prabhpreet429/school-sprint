@@ -1,12 +1,14 @@
 "use client"; 
 
-import { useGetStudentsQuery, useCreateStudentMutation, useUpdateStudentMutation, useDeleteStudentMutation } from "@/state/api";
+import { useGetStudentsQuery, useCreateStudentMutation, useUpdateStudentMutation, useDeleteStudentMutation, useGetClassesQuery } from "@/state/api";
 import Header from "@/app/(components)/Header";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusCircleIcon, SearchIcon, Edit, Trash2, Eye } from "lucide-react";
 import CreateStudentModal from "./CreateStudentModal";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -19,7 +21,9 @@ import {
 const Students = () => {
   const searchParams = useSearchParams();
   const schoolIdParam = searchParams?.get("schoolId");
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClassId, setSelectedClassId] = useState<number | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Require schoolId - no fallback
@@ -45,6 +49,22 @@ const Students = () => {
     );
   }
 
+  // Fetch classes for dropdown
+  const { data: classesData } = useGetClassesQuery({ schoolId });
+  const classes = classesData?.data || [];
+
+  // Auto-select class based on user role
+  useEffect(() => {
+    if (user && !selectedClassId) {
+      if (user.role === "student" && user.classId) {
+        setSelectedClassId(user.classId);
+      } else if (user.role === "teacher" && user.classIds && user.classIds.length > 0) {
+        // For teachers, select the first class they teach
+        setSelectedClassId(user.classIds[0]);
+      }
+    }
+  }, [user, selectedClassId]);
+
   const {
     data: studentsData,
     isLoading,
@@ -52,6 +72,7 @@ const Students = () => {
   } = useGetStudentsQuery({
     schoolId,
     search: searchTerm || undefined,
+    classId: selectedClassId,
   });
 
   const [createStudent] = useCreateStudentMutation();
@@ -111,9 +132,9 @@ const Students = () => {
 
   return (
     <div className="mx-auto pb-5 w-full">
-      {/* SEARCH BAR */}
-      <div className="mb-6">
-        <div className="flex items-center border-2 border-gray-200 rounded">
+      {/* SEARCH BAR AND CLASS FILTER */}
+      <div className="mb-6 flex gap-4">
+        <div className="flex-1 flex items-center border-2 border-gray-200 rounded">
           <SearchIcon className="w-5 h-5 text-gray-500 m-2" />
           <input
             className="w-full py-2 px-4 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
@@ -122,18 +143,38 @@ const Students = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+        <div className="w-64">
+          <Select
+            value={selectedClassId?.toString() || "all"}
+            onValueChange={(value) => setSelectedClassId(value === "all" ? undefined : parseInt(value, 10))}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Classes" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Classes</SelectItem>
+              {classes.map((cls: any) => (
+                <SelectItem key={cls.id} value={cls.id.toString()}>
+                  {cls.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
         <Header name="Students" />
-        <button
-          className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded cursor-pointer"
-          onClick={() => setIsModalOpen(true)}
-        >
-          <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Create
-          Student
-        </button>
+        {(user?.role === "admin" || (user?.role === "teacher" && selectedClassId)) && (
+          <button
+            className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded cursor-pointer"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Create
+            Student
+          </button>
+        )}
       </div>
 
       {/* BODY STUDENTS LIST */}

@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsDarkMode, setIsSidebarCollapsed } from "@/state";
 import { Bell, Menu, Moon, Sun, LogOut } from "lucide-react";
 import Image from "next/image";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
@@ -14,6 +14,37 @@ const Navbar = () => {
     (state) => state.global.isSidebarCollapsed
   );
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+  const [schoolLogo, setSchoolLogo] = useState<string | null>(null);
+
+  // Fetch school logo
+  useEffect(() => {
+    const fetchSchoolLogo = async () => {
+      if (!user?.schoolId) return;
+
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"}/api/schools/${user.schoolId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data?.logo) {
+            setSchoolLogo(data.data.logo);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching school logo:", error);
+      }
+    };
+
+    fetchSchoolLogo();
+  }, [user]);
 
   const toggleSidebar = () => {
     dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
@@ -60,14 +91,17 @@ const Navbar = () => {
           <hr className="w-0 h-7 border border-solid border-l border-gray-300 dark:border-gray-600 mx-3" />
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-3 cursor-pointer">
-              Logo
-              {/* <Image
-                src="https://s3-inventorymanagement.s3.us-east-2.amazonaws.com/profile.jpg"
-                alt="Profile"
-                width={50}
-                height={50}
-                className="rounded-full h-full object-cover"
-              /> */}
+              {schoolLogo ? (
+                <img
+                  src={schoolLogo}
+                  alt="School Logo"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                  {user?.username?.charAt(0).toUpperCase() || "U"}
+                </div>
+              )}
               <div className="flex flex-col">
                 <span className="font-semibold text-gray-900 dark:text-gray-100">
                   {user?.username || "User"}

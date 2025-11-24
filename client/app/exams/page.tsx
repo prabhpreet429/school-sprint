@@ -1,12 +1,14 @@
 "use client";
 
-import { useGetExamsQuery, useCreateExamMutation, useUpdateExamMutation, useDeleteExamMutation } from "@/state/api";
+import { useGetExamsQuery, useCreateExamMutation, useUpdateExamMutation, useDeleteExamMutation, useGetClassesQuery } from "@/state/api";
 import Header from "@/app/(components)/Header";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusCircleIcon, SearchIcon, Edit, Trash2 } from "lucide-react";
 import CreateExamModal from "./CreateExamModal";
 import { format } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -19,7 +21,9 @@ import {
 const Exams = () => {
   const searchParams = useSearchParams();
   const schoolIdParam = searchParams?.get("schoolId");
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClassId, setSelectedClassId] = useState<number | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (!schoolIdParam) {
@@ -44,9 +48,25 @@ const Exams = () => {
     );
   }
 
+  // Fetch classes for dropdown
+  const { data: classesData } = useGetClassesQuery({ schoolId });
+  const classes = classesData?.data || [];
+
+  // Auto-select class based on user role
+  useEffect(() => {
+    if (user && !selectedClassId) {
+      if (user.role === "student" && user.classId) {
+        setSelectedClassId(user.classId);
+      } else if (user.role === "teacher" && user.classIds && user.classIds.length > 0) {
+        setSelectedClassId(user.classIds[0]);
+      }
+    }
+  }, [user, selectedClassId]);
+
   const { data, error, isLoading, isFetching } = useGetExamsQuery({ 
     schoolId, 
-    search: searchTerm || undefined 
+    search: searchTerm || undefined,
+    classId: selectedClassId,
   });
   const [createExam] = useCreateExamMutation();
   const [updateExam] = useUpdateExamMutation();
@@ -113,9 +133,9 @@ const Exams = () => {
 
   return (
     <div className="p-4">
-      {/* Search Bar */}
-      <div className="mb-4">
-        <div className="relative">
+      {/* Search Bar and Class Filter */}
+      <div className="mb-4 flex gap-4">
+        <div className="flex-1 relative">
           <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
@@ -124,6 +144,24 @@ const Exams = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
           />
+        </div>
+        <div className="w-64">
+          <Select
+            value={selectedClassId?.toString() || "all"}
+            onValueChange={(value) => setSelectedClassId(value === "all" ? undefined : parseInt(value, 10))}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Classes" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Classes</SelectItem>
+              {classes.map((cls: any) => (
+                <SelectItem key={cls.id} value={cls.id.toString()}>
+                  {cls.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

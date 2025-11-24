@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { PlusCircleIcon, SearchIcon, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Table,
   TableBody,
@@ -17,6 +18,7 @@ import {
 
 const Payments = () => {
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const schoolIdParam = searchParams?.get("schoolId");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -43,7 +45,10 @@ const Payments = () => {
   }
 
   const router = useRouter();
-  const { data, error, isLoading, isFetching } = useGetPaymentsQuery({ schoolId });
+  const { data, error, isLoading, isFetching } = useGetPaymentsQuery({ 
+    schoolId,
+    studentId: user?.role === "student" ? user.studentId : undefined,
+  });
   const [deletePayment] = useDeletePaymentMutation();
 
   const handleDeletePayment = async (id: number) => {
@@ -120,15 +125,17 @@ const Payments = () => {
 
       <div className="mb-6 flex justify-between items-center">
         <Header name="Payments" />
-        <button
-          onClick={() => {
-            router.push(`/payments/record?schoolId=${schoolId}`);
-          }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer"
-        >
-          <PlusCircleIcon size={20} />
-          Record Payments
-        </button>
+        {user?.role !== "student" && (
+          <button
+            onClick={() => {
+              router.push(`/payments/record?schoolId=${schoolId}`);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer"
+          >
+            <PlusCircleIcon size={20} />
+            Record Payments
+          </button>
+        )}
       </div>
 
       <div className="w-full bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">

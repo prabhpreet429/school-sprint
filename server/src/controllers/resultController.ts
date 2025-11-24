@@ -206,27 +206,82 @@ export const createResult = async (req: Request, res: Response) => {
       });
     }
 
-    if (examId) {
-      const exam = await prisma.exam.findUnique({
-        where: { id: Number(examId) },
+    // Check if user is teacher and verify they own the lesson
+    const user = (req as any).user;
+    if (user && user.role === "teacher") {
+      const admin = await prisma.admin.findUnique({
+        where: { id: user.id },
+        include: { teacher: true },
       });
-      if (!exam || exam.schoolId !== Number(schoolId)) {
-        return res.status(404).json({
+
+      if (!admin || !admin.teacherId) {
+        return res.status(403).json({
           success: false,
-          message: "Exam not found or does not belong to this school",
+          message: "Teacher account not found",
         });
       }
-    }
 
-    if (assignmentId) {
-      const assignment = await prisma.assignment.findUnique({
-        where: { id: Number(assignmentId) },
-      });
-      if (!assignment || assignment.schoolId !== Number(schoolId)) {
-        return res.status(404).json({
-          success: false,
-          message: "Assignment not found or does not belong to this school",
+      if (examId) {
+        const exam = await prisma.exam.findUnique({
+          where: { id: Number(examId) },
+          include: { lesson: true },
         });
+        if (!exam || exam.schoolId !== Number(schoolId)) {
+          return res.status(404).json({
+            success: false,
+            message: "Exam not found or does not belong to this school",
+          });
+        }
+        if (exam.lesson.teacherId !== admin.teacherId) {
+          return res.status(403).json({
+            success: false,
+            message: "You can only add results for your own exams",
+          });
+        }
+      }
+
+      if (assignmentId) {
+        const assignment = await prisma.assignment.findUnique({
+          where: { id: Number(assignmentId) },
+          include: { lesson: true },
+        });
+        if (!assignment || assignment.schoolId !== Number(schoolId)) {
+          return res.status(404).json({
+            success: false,
+            message: "Assignment not found or does not belong to this school",
+          });
+        }
+        if (assignment.lesson.teacherId !== admin.teacherId) {
+          return res.status(403).json({
+            success: false,
+            message: "You can only add results for your own assignments",
+          });
+        }
+      }
+    } else {
+      // For non-teachers, just validate existence
+      if (examId) {
+        const exam = await prisma.exam.findUnique({
+          where: { id: Number(examId) },
+        });
+        if (!exam || exam.schoolId !== Number(schoolId)) {
+          return res.status(404).json({
+            success: false,
+            message: "Exam not found or does not belong to this school",
+          });
+        }
+      }
+
+      if (assignmentId) {
+        const assignment = await prisma.assignment.findUnique({
+          where: { id: Number(assignmentId) },
+        });
+        if (!assignment || assignment.schoolId !== Number(schoolId)) {
+          return res.status(404).json({
+            success: false,
+            message: "Assignment not found or does not belong to this school",
+          });
+        }
       }
     }
 

@@ -35,7 +35,32 @@ export const login = async (req: Request, res: Response) => {
 
     const admin = await prisma.admin.findUnique({
       where: { email },
-      include: { school: true },
+      include: { 
+        school: true,
+        student: {
+          select: {
+            id: true,
+            classId: true,
+            class: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        teacher: {
+          select: {
+            id: true,
+            classes: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!admin) {
@@ -52,6 +77,24 @@ export const login = async (req: Request, res: Response) => {
         success: false,
         message: "Invalid credentials",
       });
+    }
+
+    // Get class information based on role
+    let classId: number | null = null;
+    let classIds: number[] = [];
+    let className: string | null = null;
+    let classes: Array<{ id: number; name: string }> = [];
+    let studentId: number | null = null;
+    let teacherId: number | null = null;
+
+    if (admin.role === "student" && admin.student) {
+      classId = admin.student.classId;
+      className = admin.student.class?.name || null;
+      studentId = admin.student.id;
+    } else if (admin.role === "teacher" && admin.teacher) {
+      classIds = admin.teacher.classes.map(c => c.id);
+      classes = admin.teacher.classes;
+      teacherId = admin.teacher.id;
     }
 
     const token = generateToken({
@@ -71,6 +114,12 @@ export const login = async (req: Request, res: Response) => {
         role: admin.role,
         schoolId: admin.schoolId,
         schoolName: admin.school.name,
+        classId: classId || undefined,
+        classIds: classIds.length > 0 ? classIds : undefined,
+        className: className || undefined,
+        classes: classes.length > 0 ? classes : undefined,
+        studentId: studentId || undefined,
+        teacherId: teacherId || undefined,
       },
     });
   } catch (error) {
@@ -85,7 +134,7 @@ export const login = async (req: Request, res: Response) => {
 // Register (Only for admin role - public sign-up)
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, username, schoolName, schoolAddress, schoolCountry, schoolTimezone, role } = req.body;
+    const { email, password, username, schoolName, schoolAddressLine1, schoolState, schoolPinCode, schoolCountry, schoolTimezone, role } = req.body;
 
     // Only allow admin registration from public sign-up
     if (role !== "admin") {
@@ -126,7 +175,9 @@ export const register = async (req: Request, res: Response) => {
       school = await prisma.school.create({
         data: {
           name: schoolName,
-          address: schoolAddress || null,
+          addressLine1: schoolAddressLine1 || null,
+          state: schoolState || null,
+          pinCode: schoolPinCode || null,
           country: schoolCountry,
           timezone: schoolTimezone || "UTC",
         },
@@ -583,6 +634,122 @@ export const getAllUsers = async (req: Request, res: Response) => {
   }
 };
 
+// Update current user (username and/or password)
+export const updateCurrentUser = async (req: Request, res: Response) => {
+  try {
+    const requester = (req as any).user;
+    if (!requester) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    const { username, currentPassword, newPassword } = req.body;
+
+    // Get current user from database
+    const currentUser = await prisma.admin.findUnique({
+      where: { id: requester.id },
+    });
+
+    if (!currentUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // If password change is requested, verify current password
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({
+          success: false,
+          message: "Current password is required to change password",
+        });
+      }
+
+      const isPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          success: false,
+          message: "Current password is incorrect",
+        });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: "New password must be at least 6 characters",
+        });
+      }
+    }
+
+    // If username change is requested, check if it's available
+    if (username && username !== currentUser.username) {
+      const existingUser = await prisma.admin.findFirst({
+        where: {
+          username,
+          schoolId: currentUser.schoolId,
+          id: { not: currentUser.id },
+        },
+      });
+
+      if (existingUser) {
+        return res.status(409).json({
+          success: false,
+          message: "Username already exists in this school",
+        });
+      }
+    }
+
+    // Build update data
+    const updateData: any = {};
+    if (username) updateData.username = username;
+    if (newPassword) {
+      updateData.password = await bcrypt.hash(newPassword, 10);
+    }
+
+    // Update user
+    const updatedUser = await prisma.admin.update({
+      where: { id: requester.id },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        role: true,
+        schoolId: true,
+        school: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      admin: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        username: updatedUser.username,
+        role: updatedUser.role,
+        schoolId: updatedUser.schoolId,
+        schoolName: updatedUser.school.name,
+      },
+    });
+  } catch (error) {
+    console.error("Update current user error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update user",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 // Get current user
 export const getCurrentUser = async (req: Request, res: Response) => {
   try {
@@ -599,16 +766,34 @@ export const getCurrentUser = async (req: Request, res: Response) => {
 
     const admin = await prisma.admin.findUnique({
       where: { id: decoded.id },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        role: true,
-        schoolId: true,
+      include: {
         school: {
           select: {
             id: true,
             name: true,
+          },
+        },
+        student: {
+          select: {
+            id: true,
+            classId: true,
+            class: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        teacher: {
+          select: {
+            id: true,
+            classes: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
@@ -621,6 +806,24 @@ export const getCurrentUser = async (req: Request, res: Response) => {
       });
     }
 
+    // Get class information based on role
+    let classId: number | null = null;
+    let classIds: number[] = [];
+    let className: string | null = null;
+    let classes: Array<{ id: number; name: string }> = [];
+    let studentId: number | null = null;
+    let teacherId: number | null = null;
+
+    if (admin.role === "student" && admin.student) {
+      classId = admin.student.classId;
+      className = admin.student.class?.name || null;
+      studentId = admin.student.id;
+    } else if (admin.role === "teacher" && admin.teacher) {
+      classIds = admin.teacher.classes.map(c => c.id);
+      classes = admin.teacher.classes;
+      teacherId = admin.teacher.id;
+    }
+
     res.status(200).json({
       success: true,
       admin: {
@@ -630,6 +833,12 @@ export const getCurrentUser = async (req: Request, res: Response) => {
         role: admin.role,
         schoolId: admin.schoolId,
         schoolName: admin.school.name,
+        classId: classId || undefined,
+        classIds: classIds.length > 0 ? classIds : undefined,
+        className: className || undefined,
+        classes: classes.length > 0 ? classes : undefined,
+        studentId: studentId || undefined,
+        teacherId: teacherId || undefined,
       },
     });
   } catch (error) {

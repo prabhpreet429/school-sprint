@@ -25,11 +25,20 @@ export const getStudents = async (req: Request, res: Response) => {
 
     // Get optional search parameter
     const search = req.query.search ? String(req.query.search) : "";
+    
+    // Get optional classId parameter
+    const queryClassId = req.query.classId ? String(req.query.classId) : null;
+    const classId = queryClassId ? parseInt(queryClassId, 10) : null;
 
     // Build where clause
     const whereClause: any = {
       schoolId: schoolId,
     };
+
+    // Add classId filter if provided
+    if (classId && !isNaN(classId)) {
+      whereClause.classId = classId;
+    }
 
     // Add search filter if provided
     if (search) {
@@ -73,7 +82,10 @@ export const getStudents = async (req: Request, res: Response) => {
                 username: true,
                 name: true,
                 surname: true,
-                address: true,
+                addressLine1: true,
+                state: true,
+                pinCode: true,
+                country: true,
                 phone: true,
                 email: true,
               },
@@ -190,7 +202,10 @@ export const getStudentById = async (req: Request, res: Response) => {
                 surname: true,
                 email: true,
                 phone: true,
-                address: true,
+                addressLine1: true,
+                state: true,
+                pinCode: true,
+                country: true,
               },
             },
           },
@@ -298,7 +313,10 @@ export const createStudent = async (req: Request, res: Response) => {
       username,
       name,
       surname,
-      address,
+      addressLine1,
+      state,
+      pinCode,
+      country,
       bloodType,
       sex,
       schoolId,
@@ -316,7 +334,7 @@ export const createStudent = async (req: Request, res: Response) => {
       username,
       name,
       surname,
-      address,
+      country,
       bloodType,
       sex,
       schoolId,
@@ -374,10 +392,10 @@ export const createStudent = async (req: Request, res: Response) => {
           message: `Parent relationship must be one of: ${validRelationships.join(", ")}`,
         });
       }
-      if (!parentData.username || !parentData.name || !parentData.surname || !parentData.address || !parentData.phone) {
+      if (!parentData.username || !parentData.name || !parentData.surname || !parentData.country || !parentData.phone) {
         return res.status(400).json({
           success: false,
-          message: `Parent (${parentData.relationship}) missing required fields: username, name, surname, address, phone`,
+          message: `Parent (${parentData.relationship}) missing required fields: username, name, surname, country, phone`,
         });
       }
 
@@ -421,7 +439,10 @@ export const createStudent = async (req: Request, res: Response) => {
             username: parentData.username,
             name: parentData.name,
             surname: parentData.surname,
-            address: parentData.address,
+            addressLine1: parentData.addressLine1 || null,
+            state: parentData.state || null,
+            pinCode: parentData.pinCode || null,
+            country: parentData.country,
             phone: parentData.phone,
             email: parentData.email || null,
             schoolId: Number(schoolId),
@@ -550,7 +571,10 @@ export const createStudent = async (req: Request, res: Response) => {
         username,
         name,
         surname,
-        address,
+        addressLine1: addressLine1 || null,
+        state: state || null,
+        pinCode: pinCode || null,
+        country,
         bloodType,
         sex: sex as UserSex,
         schoolId: Number(schoolId),
@@ -583,7 +607,10 @@ export const createStudent = async (req: Request, res: Response) => {
                 username: true,
                 name: true,
                 surname: true,
-                address: true,
+                addressLine1: true,
+                state: true,
+                pinCode: true,
+                country: true,
                 phone: true,
                 email: true,
               },
@@ -627,7 +654,10 @@ export const updateStudent = async (req: Request, res: Response) => {
       username,
       name,
       surname,
-      address,
+      addressLine1,
+      state,
+      pinCode,
+      country,
       bloodType,
       sex,
       parents,
@@ -671,7 +701,7 @@ export const updateStudent = async (req: Request, res: Response) => {
       username,
       name,
       surname,
-      address,
+      country,
       bloodType,
       sex,
       classId,
@@ -781,7 +811,7 @@ export const updateStudent = async (req: Request, res: Response) => {
       // Process parents similar to create
       const parentConnections = [];
       for (const parentData of parents) {
-        const { username, name, surname, address, phone, email, relationship } = parentData;
+        const { username, name, surname, addressLine1, state, pinCode, country, phone, email, relationship } = parentData;
 
         // Check if parent already exists
         let parent = await prisma.parent.findFirst({
@@ -801,7 +831,10 @@ export const updateStudent = async (req: Request, res: Response) => {
               username,
               name,
               surname,
-              address,
+              addressLine1: addressLine1 || null,
+              state: state || null,
+              pinCode: pinCode || null,
+              country,
               phone,
               email: email || null,
               schoolId: existingStudent.schoolId,
@@ -829,7 +862,10 @@ export const updateStudent = async (req: Request, res: Response) => {
         username,
         name,
         surname,
-        address,
+        addressLine1: addressLine1 || null,
+        state: state || null,
+        pinCode: pinCode || null,
+        country,
         bloodType,
         sex,
         classId: Number(classId),
@@ -867,7 +903,10 @@ export const updateStudent = async (req: Request, res: Response) => {
                 username: true,
                 name: true,
                 surname: true,
-                address: true,
+                addressLine1: true,
+                state: true,
+                pinCode: true,
+                country: true,
                 phone: true,
                 email: true,
               },

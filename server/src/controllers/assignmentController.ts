@@ -25,11 +25,22 @@ export const getAssignments = async (req: Request, res: Response) => {
 
     // Get optional search parameter
     const search = req.query.search ? String(req.query.search) : "";
+    
+    // Get optional classId parameter
+    const queryClassId = req.query.classId ? String(req.query.classId) : null;
+    const classId = queryClassId ? parseInt(queryClassId, 10) : null;
 
     // Build where clause
     const whereClause: any = {
       schoolId: schoolId,
     };
+
+    // Add classId filter if provided (through lesson)
+    if (classId && !isNaN(classId)) {
+      whereClause.lesson = {
+        classId: classId,
+      };
+    }
 
     // Add search filter if provided
     if (search) {
@@ -179,6 +190,33 @@ export const createAssignment = async (req: Request, res: Response) => {
         success: false,
         message: "dueDate must be after startDate",
       });
+    }
+
+    // Check if user is teacher and verify they own the lesson
+    const user = (req as any).user;
+    if (user && user.role === "teacher") {
+      const admin = await prisma.admin.findUnique({
+        where: { id: user.id },
+        include: { teacher: true },
+      });
+
+      if (!admin || !admin.teacherId) {
+        return res.status(403).json({
+          success: false,
+          message: "Teacher account not found",
+        });
+      }
+
+      const lesson = await prisma.lesson.findUnique({
+        where: { id: Number(lessonId) },
+      });
+
+      if (!lesson || lesson.teacherId !== admin.teacherId) {
+        return res.status(403).json({
+          success: false,
+          message: "You can only create assignments for your own lessons",
+        });
+      }
     }
 
     // Create the assignment

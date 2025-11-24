@@ -1,6 +1,7 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import UserCard from "./components/UserCard";
 import CountChartContainer from "./components/CountChartContainer";
 import AttendanceChartContainer from "./components/AttendanceChartContainer";
@@ -11,10 +12,22 @@ import FeesSummary from "./components/FeesSummary";
 import { useGetDashboardDataQuery } from "@/state/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Dashboard = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user } = useAuth();
   const schoolIdParam = searchParams?.get("schoolId");
+
+  // Redirect students and teachers to their profile page
+  useEffect(() => {
+    if (user?.role === "student" && user.studentId && schoolIdParam) {
+      router.replace(`/students/${user.studentId}?schoolId=${schoolIdParam}`);
+    } else if (user?.role === "teacher" && user.teacherId && schoolIdParam) {
+      router.replace(`/teachers/${user.teacherId}?schoolId=${schoolIdParam}`);
+    }
+  }, [user, schoolIdParam, router]);
   
   // Require schoolId - no fallback
   if (!schoolIdParam) {
@@ -43,6 +56,18 @@ const Dashboard = () => {
             </p>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  // Show loading while redirecting students or teachers
+  if ((user?.role === "student" && user.studentId) || (user?.role === "teacher" && user.teacherId)) {
+    return (
+      <div className="p-4 flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <p className="text-lg text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
       </div>
     );
   }
