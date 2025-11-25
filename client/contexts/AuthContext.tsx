@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     logoutApi();
     setUser(null);
-    router.push("/sign-in");
+    router.push("/sign-up");
   };
 
   const hasRole = (role: string) => {

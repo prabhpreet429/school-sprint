@@ -66,7 +66,18 @@ export default function SignUpPage() {
         setError(result.message || "Registration failed");
         setIsLoading(false);
       } else {
-        router.push("/sign-in?registered=true");
+        // Get user info to get schoolId from their credentials
+        const { getCurrentUser } = await import("@/lib/auth");
+        const user = await getCurrentUser();
+        
+        if (user?.schoolId) {
+          // Redirect to dashboard (root page will use the user's schoolId)
+          router.push("/");
+          router.refresh();
+        } else {
+          // Fallback to sign-in if schoolId not available
+          router.push("/sign-in?registered=true");
+        }
       }
     } catch (error) {
       setError("An error occurred. Please try again.");
@@ -216,7 +227,7 @@ export default function SignUpPage() {
               {isLoading ? "Creating account..." : "Create Account"}
             </Button>
             <div className="text-center text-sm">
-              <a href="/sign-in" className="text-primary hover:underline">
+              <a href="/sign-in" className="text-primary hover:underline cursor-pointer">
                 Already have an account? Sign in
               </a>
             </div>

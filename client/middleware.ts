@@ -19,9 +19,8 @@ export function middleware(req: NextRequest) {
 
   // Protect all other routes
   if (!token) {
-    const signInUrl = new URL("/sign-in", req.url);
-    signInUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(signInUrl);
+    const signUpUrl = new URL("/sign-up", req.url);
+    return NextResponse.redirect(signUpUrl);
   }
 
   return NextResponse.next();
