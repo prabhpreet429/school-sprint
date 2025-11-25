@@ -1,18 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Dashboard from "@/app/dashboard/page";
-import { Card, CardContent } from "@/components/ui/card";
 import { useGetDashboardDataQuery } from "@/state/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCurrentUser } from "@/lib/auth";
 
 export default function Home() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const [schoolId, setSchoolId] = useState<number | null>(null);
+  
+  // Try to get schoolId from URL first, otherwise will get from user
+  const schoolIdParam = searchParams?.get("schoolId");
+  const [schoolId, setSchoolId] = useState<number | null>(
+    schoolIdParam ? parseInt(schoolIdParam, 10) : null
+  );
   const [isLoadingUser, setIsLoadingUser] = useState(true);
+
+  // Fetch dashboard data at root level - ALWAYS call hook before any conditional returns
+  // Use skip option to prevent query when schoolId is not available
+  const queryResult = useGetDashboardDataQuery(schoolId || 0, {
+    skip: !schoolId, // Skip the query if schoolId is not available
+  });
+  const { data, isLoading, isFetching, status } = queryResult;
+
+  // Update schoolId if URL changes
+  useEffect(() => {
+    if (schoolIdParam) {
+      const parsedId = parseInt(schoolIdParam, 10);
+      if (!isNaN(parsedId) && parsedId !== schoolId) {
+        setSchoolId(parsedId);
+      }
+    }
+  }, [schoolIdParam, schoolId]);
 
   // Redirect to sign-up if not authenticated
   useEffect(() => {
@@ -21,14 +43,17 @@ export default function Home() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  // Get schoolId from authenticated user
+  // Get schoolId from authenticated user if not in URL
   useEffect(() => {
     const fetchUserSchoolId = async () => {
-      if (isAuthenticated) {
+      if (isAuthenticated && !schoolIdParam) {
+        // Only fetch from user if schoolId is not in URL
         try {
           const user = await getCurrentUser();
           if (user?.schoolId) {
             setSchoolId(user.schoolId);
+            // Update URL to include schoolId
+            router.replace(`/?schoolId=${user.schoolId}`, { scroll: false });
           } else {
             // If no schoolId, redirect to sign-up
             router.push("/sign-up");
@@ -39,13 +64,18 @@ export default function Home() {
         } finally {
           setIsLoadingUser(false);
         }
+      } else {
+        // schoolId is in URL or not authenticated yet
+        setIsLoadingUser(false);
       }
     };
 
     if (isAuthenticated) {
       fetchUserSchoolId();
+    } else if (!authLoading) {
+      setIsLoadingUser(false);
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, schoolIdParam, authLoading]);
 
   // Show loading while checking authentication or fetching user
   if (authLoading || isLoadingUser || !isAuthenticated) {
@@ -70,10 +100,6 @@ export default function Home() {
       </div>
     );
   }
-
-  // Fetch dashboard data at root level to show loading before Dashboard component renders
-  const queryResult = useGetDashboardDataQuery(schoolId);
-  const { data, isLoading, isFetching, status } = queryResult;
 
   // Show full-page loading spinner before Dashboard component renders
   // Show loading if: query is pending, loading, or fetching without data

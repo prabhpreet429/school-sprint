@@ -36,8 +36,9 @@ export default function SignInPage() {
         const user = await getCurrentUser();
         
         if (user?.schoolId) {
-          // Redirect to dashboard (root page will use the user's schoolId)
-          router.push(callbackUrl);
+          // Redirect to dashboard with schoolId in URL
+          const url = callbackUrl === "/" ? `/?schoolId=${user.schoolId}` : `${callbackUrl}${callbackUrl.includes('?') ? '&' : '?'}schoolId=${user.schoolId}`;
+          router.push(url);
           router.refresh();
         } else {
           setError("Unable to retrieve school information. Please contact support.");

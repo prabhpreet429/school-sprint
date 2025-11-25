@@ -13,7 +13,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, user } = useAuth();
   
   const [formData, setFormData] = useState({
     email: "",
@@ -66,18 +66,19 @@ export default function SignUpPage() {
         setError(result.message || "Registration failed");
         setIsLoading(false);
       } else {
-        // Get user info to get schoolId from their credentials
-        const { getCurrentUser } = await import("@/lib/auth");
-        const user = await getCurrentUser();
-        
-        if (user?.schoolId) {
-          // Redirect to dashboard (root page will use the user's schoolId)
-          router.push("/");
-          router.refresh();
-        } else {
-          // Fallback to sign-in if schoolId not available
-          router.push("/sign-in?registered=true");
-        }
+        // Wait a moment for AuthContext to update with the user
+        // Then redirect to dashboard with schoolId in URL
+        setTimeout(async () => {
+          const { getCurrentUser } = await import("@/lib/auth");
+          const user = await getCurrentUser();
+          if (user?.schoolId) {
+            router.push(`/?schoolId=${user.schoolId}`);
+            router.refresh();
+          } else {
+            router.push("/");
+            router.refresh();
+          }
+        }, 100);
       }
     } catch (error) {
       setError("An error occurred. Please try again.");
