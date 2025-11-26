@@ -92,6 +92,7 @@ export const register = async (
   schoolState: string,
   schoolPinCode: string,
   schoolCountry: string,
+  schoolPhone: string,
   schoolTimezone: string,
   role: string
 ): Promise<AuthResponse> => {
@@ -110,6 +111,7 @@ export const register = async (
         schoolState,
         schoolPinCode,
         schoolCountry,
+        schoolPhone,
         schoolTimezone,
         role 
       }),

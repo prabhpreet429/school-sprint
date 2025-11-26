@@ -134,7 +134,7 @@ export const login = async (req: Request, res: Response) => {
 // Register (Only for admin role - public sign-up)
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, username, schoolName, schoolAddressLine1, schoolState, schoolPinCode, schoolCountry, schoolTimezone, role } = req.body;
+    const { email, password, username, schoolName, schoolAddressLine1, schoolState, schoolPinCode, schoolCountry, schoolPhone, schoolTimezone, role } = req.body;
 
     // Only allow admin registration from public sign-up
     if (role !== "admin") {
@@ -179,6 +179,7 @@ export const register = async (req: Request, res: Response) => {
           state: schoolState || null,
           pinCode: schoolPinCode || null,
           country: schoolCountry,
+          phone: schoolPhone || null,
           timezone: schoolTimezone || "UTC",
         },
       });

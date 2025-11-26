@@ -25,6 +25,7 @@ export default function SignUpPage() {
     schoolState: "",
     schoolPinCode: "",
     schoolCountry: "",
+    schoolPhone: "",
     schoolTimezone: "UTC",
     role: "admin", // Only admin can be created via public sign-up
   });
@@ -62,6 +63,7 @@ export default function SignUpPage() {
         formData.schoolState,
         formData.schoolPinCode,
         formData.schoolCountry,
+        formData.schoolPhone,
         formData.schoolTimezone,
         formData.role
       );
@@ -181,6 +183,17 @@ export default function SignUpPage() {
                 value={formData.schoolCountry}
                 onChange={(e) => setFormData({ ...formData, schoolCountry: e.target.value })}
                 required
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="schoolPhone">School Phone</Label>
+              <Input
+                id="schoolPhone"
+                type="tel"
+                placeholder="+1 (555) 123-4567"
+                value={formData.schoolPhone}
+                onChange={(e) => setFormData({ ...formData, schoolPhone: e.target.value })}
                 disabled={isLoading}
               />
             </div>

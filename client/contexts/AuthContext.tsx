@@ -8,7 +8,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
-  register: (email: string, password: string, username: string, schoolName: string, schoolAddressLine1: string, schoolState: string, schoolPinCode: string, schoolCountry: string, schoolTimezone: string, role: string) => Promise<{ success: boolean; message?: string }>;
+  register: (email: string, password: string, username: string, schoolName: string, schoolAddressLine1: string, schoolState: string, schoolPinCode: string, schoolCountry: string, schoolPhone: string, schoolTimezone: string, role: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (role: string) => boolean;
@@ -52,9 +52,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (email: string, password: string, username: string, schoolName: string, schoolAddressLine1: string, schoolState: string, schoolPinCode: string, schoolCountry: string, schoolTimezone: string, role: string) => {
+  const register = async (email: string, password: string, username: string, schoolName: string, schoolAddressLine1: string, schoolState: string, schoolPinCode: string, schoolCountry: string, schoolPhone: string, schoolTimezone: string, role: string) => {
     try {
-      const response = await registerApi(email, password, username, schoolName, schoolAddressLine1, schoolState, schoolPinCode, schoolCountry, schoolTimezone, role);
+      const response = await registerApi(email, password, username, schoolName, schoolAddressLine1, schoolState, schoolPinCode, schoolCountry, schoolPhone, schoolTimezone, role);
       if (response.success && response.admin) {
         setUser(response.admin);
         return { success: true };
