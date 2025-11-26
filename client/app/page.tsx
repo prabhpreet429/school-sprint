@@ -14,15 +14,19 @@ export default function Home() {
   
   // Try to get schoolId from URL first, otherwise will get from user
   const schoolIdParam = searchParams?.get("schoolId");
-  const [schoolId, setSchoolId] = useState<number | null>(
-    schoolIdParam ? parseInt(schoolIdParam, 10) : null
-  );
+  const [schoolId, setSchoolId] = useState<number | null>(() => {
+    if (schoolIdParam) {
+      const parsed = parseInt(schoolIdParam, 10);
+      return isNaN(parsed) ? null : parsed;
+    }
+    return null;
+  });
   const [isLoadingUser, setIsLoadingUser] = useState(true);
 
   // Fetch dashboard data at root level - ALWAYS call hook before any conditional returns
-  // Use skip option to prevent query when schoolId is not available
+  // Use skip option to prevent query when schoolId is not available or not authenticated
   const queryResult = useGetDashboardDataQuery(schoolId || 0, {
-    skip: !schoolId, // Skip the query if schoolId is not available
+    skip: !schoolId || !isAuthenticated || authLoading, // Skip the query if schoolId is not available or not authenticated
   });
   const { data, isLoading, isFetching, status } = queryResult;
 
@@ -34,7 +38,8 @@ export default function Home() {
         setSchoolId(parsedId);
       }
     }
-  }, [schoolIdParam, schoolId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schoolIdParam]); // schoolId intentionally excluded to avoid infinite loops
 
   // Redirect to sign-up if not authenticated
   useEffect(() => {
@@ -45,6 +50,11 @@ export default function Home() {
 
   // Get schoolId from authenticated user if not in URL
   useEffect(() => {
+    // Don't run if still loading auth state
+    if (authLoading) {
+      return;
+    }
+
     const fetchUserSchoolId = async () => {
       if (isAuthenticated && !schoolIdParam) {
         // Only fetch from user if schoolId is not in URL
@@ -72,10 +82,10 @@ export default function Home() {
 
     if (isAuthenticated) {
       fetchUserSchoolId();
-    } else if (!authLoading) {
+    } else {
       setIsLoadingUser(false);
     }
-  }, [isAuthenticated, router, schoolIdParam, authLoading]);
+  }, [isAuthenticated, authLoading, schoolIdParam, router]);
 
   // Show loading while checking authentication or fetching user
   if (authLoading || isLoadingUser || !isAuthenticated) {
