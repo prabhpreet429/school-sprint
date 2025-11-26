@@ -88,7 +88,9 @@ export const register = async (
   password: string,
   username: string,
   schoolName: string,
-  schoolAddress: string,
+  schoolAddressLine1: string,
+  schoolState: string,
+  schoolPinCode: string,
   schoolCountry: string,
   schoolTimezone: string,
   role: string
@@ -104,7 +106,9 @@ export const register = async (
         password, 
         username, 
         schoolName,
-        schoolAddress,
+        schoolAddressLine1,
+        schoolState,
+        schoolPinCode,
         schoolCountry,
         schoolTimezone,
         role 

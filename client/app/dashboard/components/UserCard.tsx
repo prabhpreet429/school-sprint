@@ -1,9 +1,10 @@
 "use client";
 
-import { Users, GraduationCap, UserCheck, School, TrendingUp, MapPin, Globe, Phone, Mail, Clock } from "lucide-react";
+import { Users, GraduationCap, UserCheck, School, TrendingUp, MapPin, Globe, Phone, Mail, Clock, Calendar, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SchoolDetails {
+  id?: number;
   name?: string;
   addressLine1?: string | null;
   state?: string | null;
@@ -12,6 +13,9 @@ interface SchoolDetails {
   email?: string | null;
   country?: string;
   timezone?: string | null;
+  logo?: string | null;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 interface UserCardProps {
@@ -71,6 +75,24 @@ const UserCard = ({ type, count, label, schoolDetails }: UserCardProps) => {
 
   // Special rendering for school card with details
   if (type === "school" && schoolDetails) {
+    // Format dates
+    const formatDate = (date: string | Date | undefined) => {
+      if (!date) return null;
+      try {
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      } catch {
+        return null;
+      }
+    };
+
+    const joinedDate = formatDate(schoolDetails.createdAt);
+    const lastUpdated = formatDate(schoolDetails.updatedAt);
+
     return (
       <div className="w-full h-full rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
         <div className={cn("bg-gradient-to-br", bgGradient, "p-5 w-full h-full flex flex-col justify-between")}>
@@ -111,6 +133,17 @@ const UserCard = ({ type, count, label, schoolDetails }: UserCardProps) => {
                   </p>
                 </div>
               )}
+              {joinedDate && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-white/70 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white/75 text-[10px] uppercase tracking-wide">Date Joined</p>
+                    <p className="text-white/85 text-sm font-medium">
+                      {joinedDate}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Right Column */}
@@ -137,6 +170,17 @@ const UserCard = ({ type, count, label, schoolDetails }: UserCardProps) => {
                     {schoolDetails.timezone}
                   </p>
                   <Clock className="h-4 w-4 text-white/70 flex-shrink-0" />
+                </div>
+              )}
+              {lastUpdated && (
+                <div className="flex items-center justify-end gap-2">
+                  <div className="flex-1 min-w-0 text-right">
+                    <p className="text-white/75 text-[10px] uppercase tracking-wide">Last Updated</p>
+                    <p className="text-white/85 text-sm font-medium">
+                      {lastUpdated}
+                    </p>
+                  </div>
+                  <RefreshCw className="h-4 w-4 text-white/70 flex-shrink-0" />
                 </div>
               )}
             </div>

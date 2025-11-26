@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Dashboard from "@/app/dashboard/page";
-import { useGetDashboardDataQuery } from "@/state/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -23,12 +21,12 @@ export default function Home() {
   });
   const [isLoadingUser, setIsLoadingUser] = useState(true);
 
-  // Fetch dashboard data at root level - ALWAYS call hook before any conditional returns
-  // Use skip option to prevent query when schoolId is not available or not authenticated
-  const queryResult = useGetDashboardDataQuery(schoolId || 0, {
-    skip: !schoolId || !isAuthenticated || authLoading, // Skip the query if schoolId is not available or not authenticated
-  });
-  const { data, isLoading, isFetching, status } = queryResult;
+  // Redirect to dashboard with schoolId once we have it (must be before conditional returns)
+  useEffect(() => {
+    if (schoolId && isAuthenticated && !authLoading && !isLoadingUser) {
+      router.replace(`/dashboard?schoolId=${schoolId}`, { scroll: false });
+    }
+  }, [schoolId, isAuthenticated, authLoading, isLoadingUser, router]);
 
   // Update schoolId if URL changes
   useEffect(() => {
@@ -62,8 +60,8 @@ export default function Home() {
           const user = await getCurrentUser();
           if (user?.schoolId) {
             setSchoolId(user.schoolId);
-            // Update URL to include schoolId
-            router.replace(`/?schoolId=${user.schoolId}`, { scroll: false });
+            // Redirect to dashboard with schoolId
+            router.replace(`/dashboard?schoolId=${user.schoolId}`, { scroll: false });
           } else {
             // If no schoolId, redirect to sign-up
             router.push("/sign-up");
@@ -111,24 +109,13 @@ export default function Home() {
     );
   }
 
-  // Show full-page loading spinner before Dashboard component renders
-  // Show loading if: query is pending, loading, or fetching without data
-  const shouldShowLoading = 
-    status === 'pending' || 
-    isLoading || 
-    (isFetching && !data) ||
-    (!data && status !== 'rejected');
-  
-  if (shouldShowLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-400">Loading dashboard...</p>
-        </div>
+  // Show loading while redirecting to dashboard
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center gap-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <p className="text-lg text-gray-600 dark:text-gray-400">Redirecting to dashboard...</p>
       </div>
-    );
-  }
-
-  return <Dashboard />;
+    </div>
+  );
 }

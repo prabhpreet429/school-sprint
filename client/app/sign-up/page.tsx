@@ -21,7 +21,9 @@ export default function SignUpPage() {
     confirmPassword: "",
     username: "",
     schoolName: "",
-    schoolAddress: "",
+    schoolAddressLine1: "",
+    schoolState: "",
+    schoolPinCode: "",
     schoolCountry: "",
     schoolTimezone: "UTC",
     role: "admin", // Only admin can be created via public sign-up
@@ -56,7 +58,9 @@ export default function SignUpPage() {
         formData.password,
         formData.username,
         formData.schoolName,
-        formData.schoolAddress,
+        formData.schoolAddressLine1,
+        formData.schoolState,
+        formData.schoolPinCode,
         formData.schoolCountry,
         formData.schoolTimezone,
         formData.role
@@ -72,10 +76,10 @@ export default function SignUpPage() {
           const { getCurrentUser } = await import("@/lib/auth");
           const user = await getCurrentUser();
           if (user?.schoolId) {
-            router.push(`/?schoolId=${user.schoolId}`);
+            router.push(`/dashboard?schoolId=${user.schoolId}`);
             router.refresh();
           } else {
-            router.push("/");
+            router.push("/dashboard");
             router.refresh();
           }
         }, 100);
@@ -134,15 +138,39 @@ export default function SignUpPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="schoolAddress">School Address</Label>
+              <Label htmlFor="schoolAddressLine1">School Address Line 1</Label>
               <Input
-                id="schoolAddress"
+                id="schoolAddressLine1"
                 type="text"
-                placeholder="123 Education Street, City"
-                value={formData.schoolAddress}
-                onChange={(e) => setFormData({ ...formData, schoolAddress: e.target.value })}
+                placeholder="123 Education Street"
+                value={formData.schoolAddressLine1}
+                onChange={(e) => setFormData({ ...formData, schoolAddressLine1: e.target.value })}
                 disabled={isLoading}
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="schoolState">State/Province</Label>
+                <Input
+                  id="schoolState"
+                  type="text"
+                  placeholder="California"
+                  value={formData.schoolState}
+                  onChange={(e) => setFormData({ ...formData, schoolState: e.target.value })}
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="schoolPinCode">Pin Code / ZIP Code</Label>
+                <Input
+                  id="schoolPinCode"
+                  type="text"
+                  placeholder="12345"
+                  value={formData.schoolPinCode}
+                  onChange={(e) => setFormData({ ...formData, schoolPinCode: e.target.value })}
+                  disabled={isLoading}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="schoolCountry">Country</Label>
