@@ -163,42 +163,18 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
-    // Check if school with this name already exists
-    let school = await prisma.school.findFirst({
-      where: { 
+    // Always create a new school (multiple schools can have the same name)
+    const school = await prisma.school.create({
+      data: {
         name: schoolName,
+        addressLine1: schoolAddressLine1 || null,
+        state: schoolState || null,
+        pinCode: schoolPinCode || null,
+        country: schoolCountry,
+        phone: schoolPhone || null,
+        timezone: schoolTimezone || "UTC",
       },
     });
-
-    // If school doesn't exist, create it
-    if (!school) {
-      school = await prisma.school.create({
-        data: {
-          name: schoolName,
-          addressLine1: schoolAddressLine1 || null,
-          state: schoolState || null,
-          pinCode: schoolPinCode || null,
-          country: schoolCountry,
-          phone: schoolPhone || null,
-          timezone: schoolTimezone || "UTC",
-        },
-      });
-    } else {
-      // School exists, check if it already has an admin
-      const existingAdmin = await prisma.admin.findFirst({
-        where: {
-          schoolId: school.id,
-          role: "admin",
-        },
-      });
-
-      if (existingAdmin) {
-        return res.status(409).json({
-          success: false,
-          message: "An admin already exists for this school. Only one admin is allowed per school.",
-        });
-      }
-    }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
