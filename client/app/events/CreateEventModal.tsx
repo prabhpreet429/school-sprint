@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useGetClassesQuery } from "@/state/api";
+import { convertLocalToUTC, convertUTCToLocal } from "@/lib/dateUtils";
 
 type EventFormData = {
   title: string;
@@ -62,28 +63,15 @@ const CreateEventModal = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Helper function to format datetime-local in local timezone (YYYY-MM-DDTHH:mm)
-  // Uses local time methods to avoid timezone conversion issues
-  const formatDateTimeLocal = (date: Date | string): string => {
-    if (!date) return "";
-    const d = typeof date === 'string' ? new Date(date) : date;
-    // Use local time methods to get the correct date/time in user's timezone
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
 
   // Populate form when initialData is provided (edit mode)
   useEffect(() => {
     if (isOpen && initialData) {
       const startTime = initialData.startTime 
-        ? formatDateTimeLocal(initialData.startTime)
+        ? convertUTCToLocal(initialData.startTime)
         : "";
       const endTime = initialData.endTime 
-        ? formatDateTimeLocal(initialData.endTime)
+        ? convertUTCToLocal(initialData.endTime)
         : "";
       
       setFormData({
@@ -172,10 +160,17 @@ const CreateEventModal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      // Convert datetime-local strings to ISO strings (UTC) before sending to backend
+      const eventData = {
+        ...formData,
+        startTime: convertLocalToUTC(formData.startTime),
+        endTime: convertLocalToUTC(formData.endTime),
+      };
+
       if (isEditMode && onUpdate && initialData) {
-        onUpdate(initialData.id, formData);
+        onUpdate(initialData.id, eventData);
       } else {
-        onCreate(formData);
+        onCreate(eventData);
         // Reset form only for create mode
         setFormData({
           title: "",

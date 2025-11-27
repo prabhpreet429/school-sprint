@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useGetClassesQuery, useGetSubjectsQuery, useGetTeachersQuery } from "@/state/api";
+import { convertLocalToUTC, convertUTCToLocal } from "@/lib/dateUtils";
 
 type LessonFormData = {
   name: string;
@@ -70,10 +71,11 @@ const CreateLessonModal = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Helper function to format time in local timezone (HH:mm)
+  // Helper function to format time in local timezone (HH:mm) from UTC
   const formatTimeLocal = (date: Date | string): string => {
     if (!date) return "";
     const d = typeof date === 'string' ? new Date(date) : date;
+    // Convert UTC to local timezone
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
@@ -198,9 +200,9 @@ const CreateLessonModal = ({
       return;
     }
 
-    // Convert datetime-local to proper DateTime format for API
-    const startTime = new Date(formData.startTime).toISOString();
-    const endTime = new Date(formData.endTime).toISOString();
+    // Convert datetime-local to UTC ISO string for API
+    const startTime = convertLocalToUTC(formData.startTime);
+    const endTime = convertLocalToUTC(formData.endTime);
 
     const lessonData = {
       ...formData,

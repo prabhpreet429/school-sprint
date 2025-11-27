@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useGetLessonsQuery } from "@/state/api";
+import { convertLocalToUTC, convertUTCToLocal, convertDateLocalToUTC, convertUTCToDateLocal } from "@/lib/dateUtils";
 
 type AssignmentFormData = {
   title: string;
@@ -60,25 +61,13 @@ const CreateAssignmentModal = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Helper function to format datetime-local in local timezone (YYYY-MM-DDTHH:mm)
-  const formatDateTimeLocal = (date: Date | string): string => {
-    if (!date) return "";
-    const d = typeof date === 'string' ? new Date(date) : date;
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
   // Populate form when initialData is provided (edit mode)
   useEffect(() => {
     if (isOpen && initialData) {
       setFormData({
         title: initialData.title || "",
-        startDate: formatDateTimeLocal(initialData.startDate),
-        dueDate: formatDateTimeLocal(initialData.dueDate),
+        startDate: convertUTCToDateLocal(initialData.startDate),
+        dueDate: convertUTCToDateLocal(initialData.dueDate),
         schoolId,
         lessonId: initialData.lessonId || 0,
       });
@@ -89,8 +78,8 @@ const CreateAssignmentModal = ({
       tomorrow.setDate(tomorrow.getDate() + 1);
       setFormData({
         title: "",
-        startDate: formatDateTimeLocal(now),
-        dueDate: formatDateTimeLocal(tomorrow),
+        startDate: convertUTCToDateLocal(now.toISOString()),
+        dueDate: convertUTCToDateLocal(tomorrow.toISOString()),
         schoolId,
         lessonId: 0,
       });
@@ -127,10 +116,17 @@ const CreateAssignmentModal = ({
       return;
     }
 
+    // Convert date strings to UTC ISO strings for backend
+    const assignmentData = {
+      ...formData,
+      startDate: convertDateLocalToUTC(formData.startDate),
+      dueDate: convertDateLocalToUTC(formData.dueDate),
+    };
+
     if (isEditMode && initialData && onUpdate) {
-      onUpdate(initialData.id, formData);
+      onUpdate(initialData.id, assignmentData);
     } else {
-      onCreate(formData);
+      onCreate(assignmentData);
     }
   };
 

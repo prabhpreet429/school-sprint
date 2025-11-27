@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useGetLessonsQuery } from "@/state/api";
+import { convertLocalToUTC, convertUTCToLocal } from "@/lib/dateUtils";
 
 type ExamFormData = {
   title: string;
@@ -59,23 +60,12 @@ const CreateExamModal = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const formatDateTimeLocal = (date: Date | string): string => {
-    if (!date) return "";
-    const d = typeof date === 'string' ? new Date(date) : date;
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
   useEffect(() => {
     if (isOpen && initialData) {
       setFormData({
         title: initialData.title || "",
-        startTime: initialData.startTime ? formatDateTimeLocal(initialData.startTime) : "",
-        endTime: initialData.endTime ? formatDateTimeLocal(initialData.endTime) : "",
+        startTime: initialData.startTime ? convertUTCToLocal(initialData.startTime) : "",
+        endTime: initialData.endTime ? convertUTCToLocal(initialData.endTime) : "",
         schoolId,
         lessonId: initialData.lessonId || initialData.lesson?.id || 0,
       });
@@ -153,8 +143,8 @@ const CreateExamModal = ({
       return;
     }
 
-    const startTime = new Date(formData.startTime).toISOString();
-    const endTime = new Date(formData.endTime).toISOString();
+    const startTime = convertLocalToUTC(formData.startTime);
+    const endTime = convertLocalToUTC(formData.endTime);
 
     const examData = {
       ...formData,

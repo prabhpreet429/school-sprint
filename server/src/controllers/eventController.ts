@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { parseDateTime, isValidDate } from "../utils/dateTime.js";
 
 const prisma = new PrismaClient();
 
@@ -111,28 +112,21 @@ export const createEvent = async (req: Request, res: Response) => {
       });
     }
 
-    // Parse datetime strings, handling both date-only and datetime formats
-    // For datetime-local format (YYYY-MM-DDTHH:mm), parse as local time
-    const parseDateTime = (dateTimeStr: string): Date => {
-      // If it's in datetime-local format (YYYY-MM-DDTHH:mm), parse components
-      const dtMatch = dateTimeStr.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
-      if (dtMatch) {
-        const [, year, month, day, hours, minutes] = dtMatch.map(Number);
-        return new Date(year, month - 1, day, hours, minutes);
-      }
-      // If it's date-only (YYYY-MM-DD), parse as local midnight
-      if (dateTimeStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        const [year, month, day] = dateTimeStr.split('-').map(Number);
-        return new Date(year, month - 1, day);
-      }
-      // Otherwise, use standard Date parsing
-      return new Date(dateTimeStr);
-    };
+    // Parse datetime strings - frontend sends ISO strings (UTC)
+    let start: Date;
+    let end: Date;
+    
+    try {
+      start = parseDateTime(startTime);
+      end = parseDateTime(endTime);
+    } catch (error: any) {
+      return res.status(400).json({
+        success: false,
+        message: error.message || "Invalid date format",
+      });
+    }
 
-    const start = parseDateTime(startTime);
-    const end = parseDateTime(endTime);
-
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    if (!isValidDate(start) || !isValidDate(end)) {
       return res.status(400).json({
         success: false,
         message: "Invalid date format",
@@ -259,28 +253,21 @@ export const updateEvent = async (req: Request, res: Response) => {
       });
     }
 
-    // Parse datetime strings, handling both date-only and datetime formats
-    // For datetime-local format (YYYY-MM-DDTHH:mm), parse as local time
-    const parseDateTime = (dateTimeStr: string): Date => {
-      // If it's in datetime-local format (YYYY-MM-DDTHH:mm), parse components
-      const dtMatch = dateTimeStr.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
-      if (dtMatch) {
-        const [, year, month, day, hours, minutes] = dtMatch.map(Number);
-        return new Date(year, month - 1, day, hours, minutes);
-      }
-      // If it's date-only (YYYY-MM-DD), parse as local midnight
-      if (dateTimeStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        const [year, month, day] = dateTimeStr.split('-').map(Number);
-        return new Date(year, month - 1, day);
-      }
-      // Otherwise, use standard Date parsing
-      return new Date(dateTimeStr);
-    };
+    // Parse datetime strings - frontend sends ISO strings (UTC)
+    let start: Date;
+    let end: Date;
+    
+    try {
+      start = parseDateTime(startTime);
+      end = parseDateTime(endTime);
+    } catch (error: any) {
+      return res.status(400).json({
+        success: false,
+        message: error.message || "Invalid date format",
+      });
+    }
 
-    const start = parseDateTime(startTime);
-    const end = parseDateTime(endTime);
-
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    if (!isValidDate(start) || !isValidDate(end)) {
       return res.status(400).json({
         success: false,
         message: "Invalid date format",

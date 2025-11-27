@@ -166,8 +166,12 @@ const Events = () => {
                       {event.description}
                     </div>
                   </TableCell>
-                  <TableCell>{format(new Date(event.startTime), "MMM dd, yyyy HH:mm")}</TableCell>
-                  <TableCell>{format(new Date(event.endTime), "MMM dd, yyyy HH:mm")}</TableCell>
+                  <TableCell>
+                    {format(new Date(event.startTime), "MMM dd, yyyy HH:mm")}
+                  </TableCell>
+                  <TableCell>
+                    {format(new Date(event.endTime), "MMM dd, yyyy HH:mm")}
+                  </TableCell>
                   <TableCell>{event.class?.name || "All Classes"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">

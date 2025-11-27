@@ -78,12 +78,48 @@ export function getHolidaysForCountry(country: string): Array<{ date: Date; name
     // Get holidays for current year and next year (to cover upcoming holidays)
     const holidays: Array<{ date: Date; name: string }> = [];
     
+    // Helper function to parse holiday date as local date (date-only, no time component)
+    // This prevents timezone conversion issues where holidays show one day before
+    const parseHolidayDate = (dateInput: any): Date => {
+      // If it's already a Date object, extract year, month, day and create local date
+      if (dateInput instanceof Date) {
+        const year = dateInput.getFullYear();
+        const month = dateInput.getMonth();
+        const day = dateInput.getDate();
+        return new Date(year, month, day);
+      }
+      
+      // If it's a string, try to parse it
+      if (typeof dateInput === 'string') {
+        // If it's in YYYY-MM-DD format, parse as local date
+        const dateMatch = dateInput.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (dateMatch) {
+          const [, year, month, day] = dateMatch.map(Number);
+          return new Date(year, month - 1, day);
+        }
+        // Otherwise, parse and extract components
+        const parsed = new Date(dateInput);
+        if (!isNaN(parsed.getTime())) {
+          return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+        }
+      }
+      
+      // Fallback: try to create a Date and extract components
+      const parsed = new Date(dateInput);
+      if (!isNaN(parsed.getTime())) {
+        return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+      }
+      
+      // Last resort: return current date
+      return new Date();
+    };
+
     // Get holidays for current year
     const currentYearHolidays = hd.getHolidays(currentYear);
     if (currentYearHolidays) {
       currentYearHolidays.forEach((holiday: any) => {
         holidays.push({
-          date: new Date(holiday.date),
+          date: parseHolidayDate(holiday.date),
           name: holiday.name
         });
       });
@@ -94,7 +130,7 @@ export function getHolidaysForCountry(country: string): Array<{ date: Date; name
     if (nextYearHolidays) {
       nextYearHolidays.forEach((holiday: any) => {
         holidays.push({
-          date: new Date(holiday.date),
+          date: parseHolidayDate(holiday.date),
           name: holiday.name
         });
       });
